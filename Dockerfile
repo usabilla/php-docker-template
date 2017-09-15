@@ -91,7 +91,8 @@ COPY nginx/conf/nginx.conf /etc/nginx/nginx.conf
 COPY nginx/conf/vhost.conf.template /root/ 
 COPY supervisord/services.ini /etc/supervisor.d/
 
-RUN rm -rf /root/php-install/ \
+RUN docker-php-ext-install opcache \
+    && rm -rf /root/php-install/ \
     && rm -rf /root/nginx-install/
 # </installation>
 
