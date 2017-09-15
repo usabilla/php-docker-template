@@ -17,10 +17,12 @@ RUN set -x \
 # </necessary users>
 
 # <env definition>
+ENV GPG_SERVERS ha.pool.sks-keyservers.net hkp://keyserver.ubuntu.com:80 hkp://p80.pool.sks-keyservers.net:80 pgp.mit.edu
+ENV GPG_KEYS A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0 528995BFEDFBA7191D46839EF9BA0ADA31CBD89E B0F4253373F8F6F510D42178520A9993A1C052F8
+
 ENV PHPIZE_DEPS autoconf dpkg-dev dpkg file g++ gcc libc-dev make pcre-dev pkgconf re2c
 ENV PHP_INI_DIR /usr/local/etc/php
 ENV PHP_EXTRA_CONFIGURE_ARGS --enable-fpm --with-fpm-user=usabilla --with-fpm-group=usabilla
-ENV PHP_GPG_KEYS A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0 528995BFEDFBA7191D46839EF9BA0ADA31CBD89E
 ENV PHP_VERSION 7.1.9
 ENV PHP_SHA256="ec9ca348dd51f19a84dc5d33acfff1fba1f977300604bdac08ed46ae2c281e8c"
 ENV PHP_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz/from/this/mirror"
@@ -37,9 +39,6 @@ ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
 ENV NGINX_VERSION 1.13.5
-ENV NGINX_GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8
-ENV NGINX_GPG_SERVERS ha.pool.sks-keyservers.net hkp://keyserver.ubuntu.com:80 hkp://p80.pool.sks-keyservers.net:80 pgp.mit.edu
-
 ENV NGINX_DOCUMENT_ROOT="/var/www/html"
 ENV NGINX_SERVER_NAME=localhost
 # </env definition>
@@ -47,14 +46,17 @@ ENV NGINX_SERVER_NAME=localhost
 # <copy installation>
 COPY php/install/* /root/php-install/
 COPY nginx/install/* /root/nginx-install/
+COPY gnupg/fetch-keys.sh /usr/src/
 # </copy installation>
 
 # <download packages>
 RUN apk add --no-cache --virtual .fetch-deps gnupg openssl \
-    && mkdir -p /usr/src \
+    && export GNUPGHOME="$(mktemp -d)" \
+    && /usr/src/fetch-keys.sh \
     && /root/php-install/download.sh \
     && /root/nginx-install/download.sh \
-    && apk del .fetch-deps
+    && apk del .fetch-deps \
+    && rm -rf "$GNUPGHOME"
 # </download packages>
 
 # <installation>
