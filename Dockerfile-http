@@ -61,7 +61,7 @@ RUN apk add --no-cache --virtual .fetch-deps gnupg openssl \
 # </download packages>
 
 # <installation>
-COPY common/php/docker-php-source /usr/local/bin/
+COPY common/php/docker-php-* /usr/local/bin/
 COPY http/nginx/docker-nginx-source /usr/local/bin/
 
 ## PHP & Nginx installation
@@ -80,13 +80,15 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     && /root/php-install/compile.sh \
     && /root/php-install/configure-fpm.sh \
     && /root/nginx-install/compile.sh \
+    && docker-php-ext-install opcache \
+    && pecl install apcu \
+    && docker-php-ext-enable apcu \
     && apk del .build-deps
 
 ## Supervisord installation
 RUN apk add --no-cache --virtual .supervisor-deps supervisor \
     && mkdir /etc/supervisor.d
 
-COPY common/php/docker-php-ext-* common/php/docker-php-entrypoint /usr/local/bin/
 COPY common/php/conf/*.ini /usr/local/etc/php/conf.d/
 COPY common/supervisord/default.ini /etc/supervisor.d/
 
@@ -95,9 +97,7 @@ COPY http/nginx/conf/nginx.conf /etc/nginx/nginx.conf
 COPY http/nginx/conf/vhost.conf.template /root/
 COPY http/supervisord/services.ini /etc/supervisor.d/
 
-RUN docker-php-ext-install opcache \
-    && rm -rf /root/php-install/ \
-    && rm -rf /root/nginx-install/
+RUN rm -rf /root/php-install/ /root/nginx-install/
 # </installation>
 
 EXPOSE 80 
