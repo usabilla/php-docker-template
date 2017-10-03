@@ -100,7 +100,7 @@ COPY http/supervisord/services.ini /etc/supervisor.d/
 RUN rm -rf /root/php-install/ /root/nginx-install/
 # </installation>
 
-EXPOSE 80 
+EXPOSE 80
 STOPSIGNAL SIGTERM
 
 CMD ["/usr/bin/supervisord"]
