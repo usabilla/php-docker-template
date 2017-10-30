@@ -7,7 +7,7 @@ A base image for PHP application that provides a webserver instead of only the
 
 It's created from Alpine Linux (3.6) and bundles: 
 
-- PHP 7.1.9 based on the [official image](https://hub.docker.com/_/php/)
+- PHP 7.1.11 based on the [official image](https://hub.docker.com/_/php/)
 - Nginx 1.13.5 based on the [official image](https://hub.docker.com/_/nginx/)
 - Supervisord 3.2
 
