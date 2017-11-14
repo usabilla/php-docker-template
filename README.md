@@ -42,6 +42,38 @@ environment variable (`NGINX_SERVER_NAME`) in the `Dockerfile`, e.g.:
 ENV NGINX_SERVER_NAME="myawesomeservice myawesomeservice.usabilla.com"
 ```
 
+### Nginx workers
+
+To use the most of your server you can tweak the number of nginx workers and
+connections accepted by them, the default values are (respectively): `1` and
+`1024`. These values can be overridden using environment variables (
+`NGINX_WORKERS_PROCESSES` and `NGINX_WORKERS_CONNECTIONS`) in the `Dockerfile`,
+e.g.:
+
+```Dockerfile
+ENV NGINX_WORKERS_PROCESSES="4"
+ENV NGINX_WORKERS_CONNECTIONS="2048"
+```
+
+### Nginx connection keep alive timeout
+
+The default server name is `65` and that can also be overridden using an
+environment variable (`NGINX_KEEPALIVE_TIMEOUT`) in the `Dockerfile`, e.g.:
+
+```Dockerfile
+ENV NGINX_KEEPALIVE_TIMEOUT="30"
+```
+
+### Nginx version
+
+By default we are not exposing the nginx version in the `Server` header, that
+can also be overridden using an environment variable (`NGINX_EXPOSE_VERSION`)
+in the `Dockerfile`, e.g.:
+
+```Dockerfile
+ENV NGINX_EXPOSE_VERSION="on"
+```
+
 ### Installing & enabling PHP extensions
 
 This image bundles the same scripts available in the official PHP images to

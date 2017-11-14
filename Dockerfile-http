@@ -41,6 +41,10 @@ ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 ENV NGINX_VERSION 1.13.6
 ENV NGINX_DOCUMENT_ROOT="/var/www/html"
 ENV NGINX_SERVER_NAME=localhost
+ENV NGINX_WORKERS_PROCESSES=1
+ENV NGINX_WORKERS_CONNECTIONS=1024
+ENV NGINX_KEEPALIVE_TIMEOUT=65
+ENV NGINX_EXPOSE_VERSION=off
 # </env definition>
 
 # <copy installation>
@@ -93,7 +97,7 @@ COPY common/php/conf/*.ini /usr/local/etc/php/conf.d/
 COPY common/supervisord/default.ini /etc/supervisor.d/
 
 COPY http/php-fpm/conf/*.conf /usr/local/etc/php-fpm.d/
-COPY http/nginx/conf/nginx.conf /etc/nginx/nginx.conf
+COPY http/nginx/conf/nginx.conf.template /root/
 COPY http/nginx/conf/vhost.conf.template /root/
 COPY http/supervisord/services.ini /etc/supervisor.d/
 
