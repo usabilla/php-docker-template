@@ -77,7 +77,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
 RUN apk add --no-cache --virtual .supervisor-deps supervisor \
     && mkdir /etc/supervisor.d
 
-COPY common/php/conf/*.ini /usr/local/etc/php/conf.d/
+COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY common/supervisord/default.ini /etc/supervisor.d/
 
 COPY cli/php-cli/conf/*.ini /usr/local/etc/php/conf.d/
