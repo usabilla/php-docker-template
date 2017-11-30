@@ -18,13 +18,13 @@ RUN set -x \
 
 # <env definition>
 ENV GPG_SERVERS ha.pool.sks-keyservers.net hkp://keyserver.ubuntu.com:80 hkp://p80.pool.sks-keyservers.net:80 pgp.mit.edu
-ENV GPG_KEYS A917B1ECDA84AEC2B568FED6F50ABC807BD5DCD0 528995BFEDFBA7191D46839EF9BA0ADA31CBD89E B0F4253373F8F6F510D42178520A9993A1C052F8
+ENV GPG_KEYS 1729F83938DA44E27BA0F4D3DBDB397470D12172 B1B44D8F021E4E2D6021E995DC9FF8D3EE5AF27F B0F4253373F8F6F510D42178520A9993A1C052F8
 
 ENV PHPIZE_DEPS autoconf dpkg-dev dpkg file g++ gcc libc-dev make pcre-dev pkgconf re2c
 ENV PHP_INI_DIR /usr/local/etc/php
 ENV PHP_EXTRA_CONFIGURE_ARGS --enable-fpm --with-fpm-user=usabilla --with-fpm-group=usabilla
-ENV PHP_VERSION 7.1.11
-ENV PHP_SHA256="074093e9d7d21afedc5106904218a80a47b854abe368d2728ed22184c884893e"
+ENV PHP_VERSION 7.2.0
+ENV PHP_SHA256="87572a6b924670a5d4aac276aaa4a94321936283df391d702c845ffc112db095"
 ENV PHP_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz/from/this/mirror"
 ENV PHP_ASC_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz.asc/from/this/mirror"
 
