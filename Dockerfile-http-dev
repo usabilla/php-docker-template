@@ -2,6 +2,8 @@ FROM usabillabv/php-base:http
 
 ENV NGINX_EXPOSE_VERSION=on
 
+EXPOSE 9000
+
 RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \
