@@ -4,7 +4,7 @@
 # - https://hub.docker.com/_/php/
 # - https://hub.docker.com/_/nginx/
 
-FROM alpine:3.6
+FROM alpine:3.7
 
 RUN apk add --no-cache --virtual .persistent-deps ca-certificates curl tar xz
 
@@ -38,7 +38,7 @@ ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
 ENV PHP_CPPFLAGS="$PHP_CFLAGS"
 ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
 
-ENV NGINX_VERSION 1.13.7
+ENV NGINX_VERSION 1.13.8
 ENV NGINX_DOCUMENT_ROOT="/var/www/html"
 ENV NGINX_SERVER_NAME=localhost
 ENV NGINX_WORKERS_PROCESSES=1
