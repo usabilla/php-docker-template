@@ -4,7 +4,7 @@
 # - https://hub.docker.com/_/php/
 # - https://hub.docker.com/_/nginx/
 
-FROM alpine:3.6
+FROM alpine:3.7
 
 RUN apk add --no-cache --virtual .persistent-deps ca-certificates curl tar xz
 
