@@ -5,7 +5,7 @@ ENV NGINX_EXPOSE_VERSION=on
 EXPOSE 9000
 
 RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && pecl install xdebug-beta \
+    && pecl install xdebug \
     && docker-php-ext-enable xdebug \
     && apk del .phpize-deps
 
