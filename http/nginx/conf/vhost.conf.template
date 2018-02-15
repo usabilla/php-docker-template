@@ -34,5 +34,7 @@ server {
 
         fastcgi_param SCRIPT_FILENAME ${ESCAPE}realpath_root${ESCAPE}fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT ${ESCAPE}realpath_root;
+
+        include /etc/nginx/location.d-enabled/*.conf;
     }
 }

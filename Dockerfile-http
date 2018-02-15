@@ -67,6 +67,7 @@ RUN apk add --no-cache --virtual .fetch-deps gnupg openssl \
 # <installation>
 COPY common/php/docker-php-* /usr/local/bin/
 COPY http/nginx/docker-nginx-source /usr/local/bin/
+COPY http/nginx/docker-nginx-location.d-enable /usr/local/bin/
 
 ## PHP & Nginx installation
 RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
@@ -108,6 +109,8 @@ COPY http/supervisord/services.ini /etc/supervisor.d/
 ## Nginx configuration
 COPY http/nginx/conf/nginx.conf.template /root/
 COPY http/nginx/conf/vhost.conf.template /root/
+COPY http/nginx/conf/location.d /etc/nginx/location.d-available
+RUN mkdir /etc/nginx/location.d-enabled
 # </configuration>
 
 EXPOSE 80
