@@ -93,16 +93,22 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
 RUN apk add --no-cache --virtual .supervisor-deps supervisor \
     && mkdir /etc/supervisor.d
 
-COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
-COPY common/supervisord/default.ini /etc/supervisor.d/
-
-COPY http/php-fpm/conf/*.conf /usr/local/etc/php-fpm.d/
-COPY http/nginx/conf/nginx.conf.template /root/
-COPY http/nginx/conf/vhost.conf.template /root/
-COPY http/supervisord/services.ini /etc/supervisor.d/
-
 RUN rm -rf /root/php-install/ /root/nginx-install/
 # </installation>
+
+# <configuration>
+## PHP configuration
+COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
+COPY http/php-fpm/conf/*.conf /usr/local/etc/php-fpm.d/
+
+## Supervisord configuration
+COPY common/supervisord/default.ini /etc/supervisor.d/
+COPY http/supervisord/services.ini /etc/supervisor.d/
+
+## Nginx configuration
+COPY http/nginx/conf/nginx.conf.template /root/
+COPY http/nginx/conf/vhost.conf.template /root/
+# </configuration>
 
 EXPOSE 80
 STOPSIGNAL SIGTERM
