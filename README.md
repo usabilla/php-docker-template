@@ -5,7 +5,7 @@ A base image for PHP application that provides a webserver instead of only the
 
 ## What's installed
 
-It's build based on the [official Alpine Linux image](https://hub.docker.com/_/alpine/) (3.7) and bundles:
+It's built based on the [official Alpine Linux image](https://hub.docker.com/_/alpine/) (3.7) and bundles:
 
 - PHP 7.2.5 inpired by the [official image](https://hub.docker.com/_/php/)
 - Nginx 1.13.12 inspired by the [official image](https://hub.docker.com/_/nginx/)
