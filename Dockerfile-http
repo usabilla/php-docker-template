@@ -4,7 +4,8 @@
 # - https://hub.docker.com/_/php/
 # - https://hub.docker.com/_/nginx/
 
-FROM alpine:3.7
+## HTTP STAGE ##
+FROM alpine:3.7 as http
 
 RUN apk add --no-cache --virtual .persistent-deps ca-certificates curl tar xz
 
@@ -117,3 +118,18 @@ EXPOSE 80
 STOPSIGNAL SIGTERM
 
 CMD ["/usr/bin/supervisord"]
+
+## HTTP-DEV STAGE ##
+FROM http as http-dev
+
+ENV NGINX_EXPOSE_VERSION=on
+
+EXPOSE 9000
+
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && pecl install xdebug \
+    && pecl clear-cache \
+    && docker-php-ext-enable xdebug \
+    && apk del .phpize-deps
+
+COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini

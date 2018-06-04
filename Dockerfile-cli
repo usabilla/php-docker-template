@@ -4,7 +4,8 @@
 # - https://hub.docker.com/_/php/
 # - https://hub.docker.com/_/nginx/
 
-FROM alpine:3.7
+## CLI STAGE ##
+FROM alpine:3.7 as cli
 
 RUN apk add --no-cache --virtual .persistent-deps ca-certificates curl tar xz
 
@@ -88,3 +89,15 @@ RUN rm -rf /root/php-install/
 STOPSIGNAL SIGTERM
 
 CMD ["/usr/bin/supervisord"]
+
+## CLI-DEV STAGE ##
+FROM cli as cli-dev
+
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && pecl install xdebug \
+    && pecl clear-cache \
+    && docker-php-ext-enable xdebug \
+    && apk del .phpize-deps
+
+COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
+

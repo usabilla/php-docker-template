@@ -1,0 +1,28 @@
+version: 2
+
+workflows:
+  version: 2
+  build-and-push:
+    jobs:
+      - http:
+          context: dockerhub
+          filters:
+            branches:
+              only: /master/
+      - cli:
+          context: dockerhub
+          filters:
+            branches:
+              only: /master/
+
+jobs:
+  http:
+    machine: true
+    steps:
+      - checkout
+      - run: make ci-push-http
+  cli:
+    machine: true
+    steps:
+      - checkout
+      - run: make ci-push-cli
