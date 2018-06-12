@@ -44,7 +44,7 @@ COPY common/gnupg/fetch-keys.sh /usr/src/
 # </copy installation>
 
 # <download packages>
-RUN apk add --no-cache --virtual .fetch-deps gnupg openssl \
+RUN apk add --no-cache --virtual .fetch-deps gnupg libressl \
     && export GNUPGHOME="$(mktemp -d)" \
     && /usr/src/fetch-keys.sh \
     && /root/php-install/download.sh \
@@ -65,7 +65,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     libxml2-dev \
     libxslt-dev \
     linux-headers \
-    openssl-dev \
+    libressl-dev \
     sqlite-dev \
     zlib-dev \
     && /root/php-install/compile.sh \
