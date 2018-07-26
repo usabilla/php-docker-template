@@ -74,13 +74,7 @@ RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
     && docker-php-ext-enable apcu \
     && apk del .build-deps
 
-## Supervisord installation
-RUN apk add --no-cache --virtual .supervisor-deps supervisor \
-    && mkdir /etc/supervisor.d
-
 COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
-COPY common/supervisord/default.ini /etc/supervisor.d/
-
 COPY cli/php-cli/conf/*.ini /usr/local/etc/php/conf.d/
 
 RUN rm -rf /root/php-install/
@@ -88,7 +82,7 @@ RUN rm -rf /root/php-install/
 
 STOPSIGNAL SIGTERM
 
-CMD ["/usr/bin/supervisord"]
+ENTRYPOINT ["php", "-a"]
 
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
