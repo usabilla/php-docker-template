@@ -19,7 +19,13 @@ RUN set -xe \
 COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY cli/php-cli/conf/*.ini /usr/local/etc/php/conf.d/
 
+RUN set -xe \
+    && curl -sL -o /usr/local/bin/shush https://github.com/realestate-com-au/shush/releases/download/v1.3.4/shush_linux_amd64 \
+    && chmod +x /usr/local/bin/shush
+
 STOPSIGNAL SIGTERM
+
+ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
 
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
@@ -33,3 +39,5 @@ RUN set -xe \
     && apk del .phpize-deps 
 
 COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
+
+ENTRYPOINT ["docker-php-entrypoint"]
