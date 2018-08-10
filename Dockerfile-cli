@@ -5,7 +5,8 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
-RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+RUN set -xe \
+    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install pcntl \
     && docker-php-ext-install opcache \
     && pecl install apcu \
@@ -23,7 +24,8 @@ STOPSIGNAL SIGTERM
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
 
-RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+RUN set -xe \
+    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
     && pecl clear-cache \
     && docker-php-ext-enable xdebug \
