@@ -5,6 +5,7 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
+# Install PHP extensions
 RUN set -xe \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install pcntl \
@@ -19,9 +20,14 @@ RUN set -xe \
 COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY cli/php-cli/conf/*.ini /usr/local/etc/php/conf.d/
 
+# Install shush
 RUN set -xe \
     && curl -sL -o /usr/local/bin/shush https://github.com/realestate-com-au/shush/releases/download/v1.3.4/shush_linux_amd64 \
     && chmod +x /usr/local/bin/shush
+
+# Install composer
+COPY composer/install-composer /usr/local/bin/
+RUN set -xe && install-composer
 
 STOPSIGNAL SIGTERM
 
@@ -30,6 +36,7 @@ ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
 
+# Enable XDebug
 RUN set -xe \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
@@ -40,4 +47,5 @@ RUN set -xe \
 
 COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
 
+# Change entrypoint back to the default because we don't need shush in development
 ENTRYPOINT ["docker-php-entrypoint"]
