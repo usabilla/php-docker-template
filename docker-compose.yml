@@ -1,0 +1,30 @@
+version: '3.4'
+services:
+  php_fpm:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile-fpm
+      target: fpm-dev
+    volumes:
+      - fpm-sock:/var/run
+      - ./test:/var/www/html
+    networks:
+      - backend-php
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile-http
+      target: http-dev
+    ports:
+      - 8080:80
+    volumes:
+      - fpm-sock:/var/run
+      - ./test:/var/www/html
+    networks:
+      - backend-php
+
+volumes:
+  fpm-sock:
+
+networks: 
+  backend-php:
