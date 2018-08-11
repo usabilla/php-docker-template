@@ -1,5 +1,11 @@
 FROM nginx:1.15-alpine as http
 
+# <necessary users>
+RUN set -x \
+    && addgroup -g 1000 app \
+    && adduser -u 1000 -D -G app app
+# </necessary users>
+
 # <env definition>
 ENV NGINX_DOCUMENT_ROOT="/var/www/html"
 ENV NGINX_SERVER_NAME=localhost
