@@ -1,5 +1,5 @@
 push: push-cli-dev push-cli push-http-dev push-http
-build: build-cli-dev build-cli build-http-dev build-http
+build: build-cli-dev build-cli build-http-dev build-http build-fpm build-fpm-dev
 ci-push-cli: ci-docker-login push-cli-dev push-cli
 ci-push-http: ci-docker-login push-http-dev push-http
 
@@ -14,6 +14,10 @@ build-http-dev:
 	docker build -t usabillabv/php-base:http-dev -f Dockerfile-http --target=http-dev .
 build-http:
 	docker build -t usabillabv/php-base:http -f Dockerfile-http --target=http .
+build-fpm-dev:
+	docker build -t usabillabv/php-base:fpm-dev -f Dockerfile-fpm --target=fpm-dev .
+build-fpm:
+	docker build -t usabillabv/php-base:fpm -f Dockerfile-fpm --target=fpm .
 
 # Docker image push
 push-cli-dev: build-cli-dev
@@ -24,6 +28,10 @@ push-http-dev: build-http-dev
 	docker push usabillabv/php-base:http-dev
 push-http: build-http
 	docker push usabillabv/php-base:http
+push-fpm-dev: build-fpm-dev
+	docker push usabillabv/php-base:fpm-dev
+push-fpm: build-fpm
+	docker push usabillabv/php-base:fpm
 
 # CI dependencies
 ci-docker-login:
