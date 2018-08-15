@@ -39,8 +39,8 @@ FROM cli as cli-dev
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
-    && pecl clear-cache \
     && docker-php-ext-enable xdebug \
+    && pecl clear-cache \
     && rm -rf /usr/src/php* \
     && apk del .phpize-deps 
 

@@ -1,40 +1,44 @@
-push: push-cli-dev push-cli push-http-dev push-http
-build: build-cli-dev build-cli build-http-dev build-http build-fpm build-fpm-dev
-ci-push-cli: ci-docker-login push-cli-dev push-cli
-ci-push-http: ci-docker-login push-http-dev push-http
+push: push-cli build-fpm push-http
+build: clean-tags build-cli build-fpm build-http
+ci-push-cli: ci-docker-login push-cli
+ci-push-fpm: ci-docker-login push-fpm
+ci-push-http: ci-docker-login push-http
+qa: build test lint
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(abspath $(patsubst %/,%,$(dir $(mkfile_path))))
 
 .PHONY: *
 
-# Docker image builds
-build-cli-dev:
-	docker build -t usabillabv/php-base:cli-dev -f Dockerfile-cli --target=cli-dev .
-build-cli:
-	docker build -t usabillabv/php-base:cli -f Dockerfile-cli --target=cli .
-build-http-dev:
-	docker build -t usabillabv/php-base:http-dev -f Dockerfile-http --target=http-dev .
-build-http:
-	docker build -t usabillabv/php-base:http -f Dockerfile-http --target=http .
-build-fpm-dev:
-	docker build -t usabillabv/php-base:fpm-dev -f Dockerfile-fpm --target=fpm-dev .
-build-fpm:
-	docker build -t usabillabv/php-base:fpm -f Dockerfile-fpm --target=fpm .
+BUILDINGIMAGE=*
 
-# Docker image push
-push-cli-dev: build-cli-dev
-	docker push usabillabv/php-base:cli-dev
+# Docker PHP images build matrix ./build-php.sh (cli/fpm) (PHP version) (Alpine version)
+build-cli: BUILDINGIMAGE=cli
+build-cli: clean-tags
+	./build-php.sh cli 7.2 3.7
+	./build-php.sh cli 7.2 3.8
+	# ./build-php.sh cli 7.3-rc 3.8
+build-fpm: clean-tags
+	./build-php.sh fpm 7.2 3.7
+	./build-php.sh fpm 7.2 3.8
+	# ./build-php.sh fpm 7.3-rc 3.8
+
+# Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
+build-http: BUILDINGIMAGE=http
+build-http: clean-tags
+	./build-nginx.sh 1.15 nginx # nginx v1.5 is currently carrying the `nginx` tag but so far we only  tested 1.14
+	./build-nginx.sh 1.14
+
+clean-tags:
+	rm ${current_dir}/tmp/build-${BUILDINGIMAGE}.tags || true
+
+# Docker images push
 push-cli: build-cli
 	docker push usabillabv/php-base:cli
-push-http-dev: build-http-dev
-	docker push usabillabv/php-base:http-dev
-push-http: build-http
-	docker push usabillabv/php-base:http
-push-fpm-dev: build-fpm-dev
-	docker push usabillabv/php-base:fpm-dev
 push-fpm: build-fpm
 	docker push usabillabv/php-base:fpm
+push-http: build-http
+	docker push usabillabv/php-base:http
 
 # CI dependencies
 ci-docker-login:
@@ -56,5 +60,3 @@ test:
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
 		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1'
 	docker-compose -p php-docker-template-tests down
-
-qa: build test lint
