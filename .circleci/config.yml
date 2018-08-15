@@ -2,6 +2,9 @@ version: 2
 
 workflows:
   version: 2
+  test:
+    jobs:
+      - test
   build-and-push:
     jobs:
       - http:
@@ -26,3 +29,9 @@ jobs:
     steps:
       - checkout
       - run: make ci-push-cli
+  test:
+    machine: true
+    steps:
+      - checkout
+      - run: make build
+      - run: make test

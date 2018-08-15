@@ -1,10 +1,9 @@
-version: '3.4'
+version: '3.2'
 services:
   php_fpm:
     build:
       context: ./
       dockerfile: ./Dockerfile-fpm
-      target: fpm-dev
     volumes:
       - fpm-sock:/var/run
       - ./test:/var/www/html
@@ -14,7 +13,6 @@ services:
     build:
       context: ./
       dockerfile: ./Dockerfile-http
-      target: http-dev
     ports:
       - 8080:80
     volumes:

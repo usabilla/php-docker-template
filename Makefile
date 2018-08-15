@@ -46,10 +46,10 @@ test:
 		--network phpdockertemplatetests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1'
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1'
 	docker run --rm -t \
 		--network phpdockertemplatetests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1'
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1'
 	docker-compose -p php-docker-template-tests down
