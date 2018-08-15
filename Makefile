@@ -3,6 +3,9 @@ build: build-cli-dev build-cli build-http-dev build-http build-fpm build-fpm-dev
 ci-push-cli: ci-docker-login push-cli-dev push-cli
 ci-push-http: ci-docker-login push-http-dev push-http
 
+mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
+current_dir := $(abspath $(patsubst %/,%,$(dir $(mkfile_path))))
+
 .PHONY: *
 
 # Docker image builds
@@ -37,3 +40,16 @@ push-fpm: build-fpm
 ci-docker-login:
 	docker login --username $$DOCKER_USER --password $$DOCKER_PASSWORD
 
+test:
+	docker-compose -p php-docker-template-tests up -d
+	docker run --rm -t \
+		--network phpdockertemplatetests_backend-php \
+		-v "${current_dir}/test:/tests" \
+		-v /var/run/docker.sock:/var/run/docker.sock:ro \
+		renatomefi/testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1'
+	docker run --rm -t \
+		--network phpdockertemplatetests_backend-php \
+		-v "${current_dir}/test:/tests" \
+		-v /var/run/docker.sock:/var/run/docker.sock:ro \
+		renatomefi/testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1'
+	docker-compose -p php-docker-template-tests down
