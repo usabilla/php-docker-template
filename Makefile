@@ -34,11 +34,11 @@ clean-tags:
 
 # Docker images push
 push-cli: build-cli
-	docker push usabillabv/php-base:cli
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs --verbose -I % docker push %
 push-fpm: build-fpm
-	docker push usabillabv/php-base:fpm
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs --verbose -I % docker push %
 push-http: build-http
-	docker push usabillabv/php-base:http
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs --verbose -I % docker push %
 
 # CI dependencies
 ci-docker-login:
