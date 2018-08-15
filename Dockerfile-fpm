@@ -6,6 +6,7 @@ RUN set -x \
     && adduser -u 1000 -D -G app app
 # </necessary users>
 
+# Install PHP extensions
 RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install opcache \
     && pecl install apcu \
@@ -18,17 +19,25 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
+# Install composer
+COPY src/php/utils/install-composer /usr/local/bin/
+RUN install-composer
+
 STOPSIGNAL SIGTERM
 CMD ["php-fpm"]
 
 VOLUME [ "/var/run" ]
 
+## FPM-DEV STAGE ##
 FROM fpm as fpm-dev
 
-RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+# Enable XDebug
+RUN set -x \
+    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
     && pecl clear-cache \
     && docker-php-ext-enable xdebug \
-    && apk del .phpize-deps
+    && rm -rf /usr/src/php* \
+    && apk del .phpize-deps 
 
 COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
