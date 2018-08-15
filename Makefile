@@ -40,6 +40,9 @@ push-fpm: build-fpm
 ci-docker-login:
 	docker login --username $$DOCKER_USER --password $$DOCKER_PASSWORD
 
+lint:
+	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http
+
 test:
 	docker-compose -p php-docker-template-tests up -d
 	docker run --rm -t \
