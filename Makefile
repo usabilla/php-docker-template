@@ -44,7 +44,7 @@ lint:
 	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http
 
 test:
-	docker-compose -p php-docker-template-tests up -d
+	docker-compose -p php-docker-template-tests up --force-recreate --build -d
 	docker run --rm -t \
 		--network phpdockertemplatetests_backend-php \
 		-v "${current_dir}/test:/tests" \
@@ -56,3 +56,5 @@ test:
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
 		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1'
 	docker-compose -p php-docker-template-tests down
+
+qa: build test lint

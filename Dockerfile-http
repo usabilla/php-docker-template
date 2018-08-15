@@ -16,6 +16,7 @@ ENV NGINX_EXPOSE_VERSION=off
 # </env definition>
 
 COPY http/nginx/docker-nginx-location.d-enable /usr/local/bin/
+COPY http/nginx/docker-nginx-entrypoint /usr/local/bin/docker-nginx-entrypoint
 
 # <Nginx configuration>
 COPY http/nginx/conf/nginx.conf.template /root/
@@ -26,8 +27,7 @@ COPY http/nginx/conf/location.d /etc/nginx/location.d-available
 RUN mkdir /etc/nginx/location.d-enabled
 # </Nginx configuration>
 
-## From the environment variables replace the nginx configuration placeholders
-CMD ESCAPE='$' envsubst < /root/vhost.conf.template > /etc/nginx/conf.d/default.conf && ESCAPE='$' envsubst < /root/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'
+CMD ["docker-nginx-entrypoint"]
 
 FROM http as http-dev
 

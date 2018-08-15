@@ -6,7 +6,7 @@ RUN set -x \
     && adduser -u 1000 -D -G app app
 
 # Install PHP extensions
-RUN set -xe \
+RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install pcntl \
     && docker-php-ext-install opcache \
@@ -37,7 +37,7 @@ ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
 FROM cli as cli-dev
 
 # Enable XDebug
-RUN set -xe \
+RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
     && pecl clear-cache \
