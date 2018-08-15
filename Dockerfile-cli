@@ -17,8 +17,8 @@ RUN set -x \
     && rm -rf /usr/src/php* && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
 
-COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
-COPY cli/php-cli/conf/*.ini /usr/local/etc/php/conf.d/
+COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
+COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
 
 # Install shush
 RUN set -xe \
@@ -45,7 +45,7 @@ RUN set -x \
     && rm -rf /usr/src/php* \
     && apk del .phpize-deps 
 
-COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
+COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
 
 # Change entrypoint back to the default because we don't need shush in development
 ENTRYPOINT ["docker-php-entrypoint"]

@@ -15,8 +15,8 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && rm -rf /usr/src/php* && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
 
-COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
-COPY http/php-fpm/conf/*.conf /usr/local/etc/php-fpm.d/
+COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
+COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
 STOPSIGNAL SIGTERM
 CMD ["php-fpm"]
@@ -31,4 +31,4 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-enable xdebug \
     && apk del .phpize-deps
 
-COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
+COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
