@@ -29,7 +29,7 @@ RUN install-composer
 
 STOPSIGNAL SIGTERM
 
-CMD ["/usr/local/bin/shush", "exec", "php-fpm"]
+CMD ["/usr/local/bin/shush", "exec", "php-fpm", "--force-stderr"]
 
 VOLUME [ "/var/run" ]
 
