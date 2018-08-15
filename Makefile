@@ -1,5 +1,5 @@
-push: push-cli build-fpm push-http
 build: clean-tags build-cli build-fpm build-http
+push: push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
 ci-push-http: ci-docker-login push-http
@@ -29,7 +29,8 @@ build-http: clean-tags
 	./build-nginx.sh 1.15 nginx # nginx v1.5 is currently carrying the `nginx` tag but so far we only  tested 1.14
 	./build-nginx.sh 1.14
 
-clean-tags:
+.NOTPARALLEL: clean-tags
+clean-tags: 
 	rm ${current_dir}/tmp/build-${BUILDINGIMAGE}.tags || true
 
 # Docker images push
