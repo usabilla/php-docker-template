@@ -21,12 +21,11 @@ COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
 
 # Install shush
-RUN set -xe \
-    && curl -sL -o /usr/local/bin/shush https://github.com/realestate-com-au/shush/releases/download/v1.3.4/shush_linux_amd64 \
-    && chmod +x /usr/local/bin/shush
+COPY src/php/utils/install-shush /usr/local/bin/
+RUN install-shush
 
 # Install composer
-COPY composer/install-composer /usr/local/bin/
+COPY src/php/utils/install-composer /usr/local/bin/
 RUN set -xe && install-composer
 
 STOPSIGNAL SIGTERM
