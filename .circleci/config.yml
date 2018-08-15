@@ -4,6 +4,7 @@ workflows:
   version: 2
   test:
     jobs:
+      - lint
       - test
   build-and-push:
     jobs:
@@ -29,6 +30,11 @@ jobs:
     steps:
       - checkout
       - run: make ci-push-cli
+  lint:
+    machine: true
+    steps:
+      - checkout
+      - run: make lint
   test:
     machine: true
     steps:
