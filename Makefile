@@ -35,11 +35,11 @@ clean-tags:
 
 # Docker images push
 push-cli: build-cli
-	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs --verbose -I % docker push %
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
 push-fpm: build-fpm
-	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs --verbose -I % docker push %
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
 push-http: build-http
-	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs --verbose -I % docker push %
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
 
 # CI dependencies
 ci-docker-login:
