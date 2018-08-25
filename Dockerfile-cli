@@ -20,6 +20,10 @@ RUN set -x \
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
 
+# Install composer
+COPY src/php/utils/install-composer /usr/local/bin/
+RUN install-composer && rm -rf /usr/local/bin/install-composer
+
 STOPSIGNAL SIGTERM
 
 ENTRYPOINT ["php", "-a"]

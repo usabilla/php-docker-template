@@ -18,6 +18,10 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
+# Install composer
+COPY src/php/utils/install-composer /usr/local/bin/
+RUN install-composer && rm -rf /usr/local/bin/install-composer
+
 STOPSIGNAL SIGTERM
 
 VOLUME [ "/var/run" ]
