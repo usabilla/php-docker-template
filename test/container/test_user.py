@@ -1,0 +1,29 @@
+import pytest
+
+@pytest.mark.php
+@pytest.mark.nginx
+def test_userPresent(host):
+  userName = 'app'
+  groupName = 'app'
+  homeDir = '/home/app'
+  shell = '/sbin/halt'
+
+  usr = host.user(userName)
+  assert userName in usr.name
+  assert groupName in usr.group
+  assert homeDir in usr.home
+  assert shell in usr.shell
+
+@pytest.mark.php
+def test_fpm_can_create_file(host):
+  testFile = "/tmp/temptestfile" 
+  host.run("rm {0}".format(testFile))
+
+  assert host.file(testFile).exists is False
+  host.run("wget http://nginx/filesystem.php")
+  assert host.file(testFile).exists is True
+  assert host.file(testFile).user == "app"
+  assert host.file(testFile).group == "app"
+  assert host.file(testFile).mode == 0o644
+
+  host.run("rm {0}".format(testFile))

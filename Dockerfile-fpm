@@ -1,24 +1,23 @@
-FROM php:7.2-cli-alpine3.7 as cli
+FROM php:7.2-fpm-alpine3.7 as fpm
 
-# Add usabilla user and group
+# <necessary users>
 RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
+# </necessary users>
 
 # Install PHP extensions
-RUN set -x \
-    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && docker-php-ext-install pcntl \
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install opcache \
     && pecl install apcu \
     && pecl clear-cache \
     && docker-php-ext-enable apcu \
-    # Removing all PHP leftovers since the helper scripts nor the official image are removing them
-    && rm -rf /usr/src/php* && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
+    # those deletions happen since the helper scripts nor the official image are removing them
+    && rm -rf /usr/src/php* && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
 
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
-COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
+COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
 # Install shush
 COPY src/php/utils/install-shush /usr/local/bin/
@@ -26,14 +25,16 @@ RUN install-shush
 
 # Install composer
 COPY src/php/utils/install-composer /usr/local/bin/
-RUN set -xe && install-composer
+RUN install-composer
 
 STOPSIGNAL SIGTERM
 
-ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
+CMD ["/usr/local/bin/shush", "exec", "php-fpm", "--force-stderr"]
 
-## CLI-DEV STAGE ##
-FROM cli as cli-dev
+VOLUME [ "/var/run" ]
+
+## FPM-DEV STAGE ##
+FROM fpm as fpm-dev
 
 # Enable XDebug
 RUN set -x \
@@ -45,6 +46,3 @@ RUN set -x \
     && apk del .phpize-deps 
 
 COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
-
-# Change entrypoint back to the default because we don't need shush in development
-ENTRYPOINT ["docker-php-entrypoint"]
