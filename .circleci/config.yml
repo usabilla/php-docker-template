@@ -14,6 +14,11 @@ workflows:
           filters:
             branches:
               only: /master/
+      - fpm:
+          context: dockerhub
+          filters:
+            branches:
+              only: /master/
 
 jobs:
   http:
@@ -26,3 +31,8 @@ jobs:
     steps:
       - checkout
       - run: make ci-push-cli
+  fpm:
+    machine: true
+    steps:
+      - checkout
+      - run: make ci-push-fpm
