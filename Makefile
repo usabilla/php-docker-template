@@ -47,3 +47,5 @@ push-http: build-http
 ci-docker-login:
 	docker login --username $$DOCKER_USER --password $$DOCKER_PASSWORD
 
+lint:
+	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http

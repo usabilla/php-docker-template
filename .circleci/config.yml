@@ -2,6 +2,9 @@ version: 2
 
 workflows:
   version: 2
+  test:
+    jobs:
+      - lint
   build-and-push:
     jobs:
       - http:
@@ -36,3 +39,8 @@ jobs:
     steps:
       - checkout
       - run: make ci-push-fpm
+  lint:
+    machine: true
+    steps:
+      - checkout
+      - run: make lint
