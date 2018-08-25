@@ -1,0 +1,28 @@
+version: '3.2'
+services:
+  php_fpm:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile-fpm
+    volumes:
+      - fpm-sock:/var/run
+      - ./test:/var/www/html
+    networks:
+      - backend-php
+  nginx:
+    build:
+      context: ./
+      dockerfile: ./Dockerfile-http
+    ports:
+      - 8080:80
+    volumes:
+      - fpm-sock:/var/run
+      - ./test:/var/www/html
+    networks:
+      - backend-php
+
+volumes:
+  fpm-sock:
+
+networks: 
+  backend-php:
