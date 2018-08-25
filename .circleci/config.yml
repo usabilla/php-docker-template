@@ -2,44 +2,46 @@ version: 2
 
 workflows:
   version: 2
-  test:
+  lint-build-test-push:
     jobs:
       - lint
-      - test
-  build-and-push:
-    jobs:
-      - http:
+      - build-http:
+          requires:
+            - lint
+      - build-fpm:
+          requires:
+            - lint
+      - build-cli:
+          requires:
+            - lint
+      - test:
+          requires:
+            - build-http
+            - build-fpm
+            - build-cli
+      - push-http:
           context: dockerhub
           filters:
             branches:
-              only: /master/
-      - cli:
+              only: master
+          requires:
+            - test
+      - push-fpm:
           context: dockerhub
           filters:
             branches:
-              only: /master/
-      - fpm:
+              only: master
+          requires:
+            - test
+      - push-cli:
           context: dockerhub
           filters:
             branches:
-              only: /master/
+              only: master
+          requires:
+            - test
 
 jobs:
-  http:
-    machine: true
-    steps:
-      - checkout
-      - run: make ci-push-http
-  cli:
-    machine: true
-    steps:
-      - checkout
-      - run: make ci-push-cli
-  fpm:
-    machine: true
-    steps:
-      - checkout
-      - run: make ci-push-fpm
   lint:
     machine: true
     steps:
@@ -49,5 +51,52 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: make build
       - run: make test
+  build-http:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-http
+      - run: cat ./tmp/build-http.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 1}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-http.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-http.tar
+  build-fpm:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-fpm
+      - run: cat ./tmp/build-fpm.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 8}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-fpm.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-fpm.tar
+  build-cli:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-cli
+      - run: cat ./tmp/build-cli.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 7}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-cli.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-cli.tar
+  push-http:
+    machine: true
+    steps:
+      - checkout
+      - run: make ci-push-http
+  push-cli:
+    machine: true
+    steps:
+      - checkout
+      - run: make ci-push-cli
+  push-fpm:
+    machine: true
+    steps:
+      - checkout
+      - run: make ci-push-fpm
