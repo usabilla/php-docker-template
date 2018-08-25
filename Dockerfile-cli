@@ -20,13 +20,17 @@ RUN set -x \
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
 
+# Install shush
+COPY src/php/utils/install-shush /usr/local/bin/
+RUN install-shush && rm -rf /usr/local/bin/install-shush
+
 # Install composer
 COPY src/php/utils/install-composer /usr/local/bin/
 RUN install-composer && rm -rf /usr/local/bin/install-composer
 
 STOPSIGNAL SIGTERM
 
-ENTRYPOINT ["php", "-a"]
+ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
 
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
@@ -42,3 +46,5 @@ RUN set -x \
 
 COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
 
+# Change entrypoint back to the default because we don't need shush in development
+ENTRYPOINT ["docker-php-entrypoint"]
