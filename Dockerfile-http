@@ -1,135 +1,26 @@
-# Created based on the oficial PHP and nginx containers
-#
-# Info:
-# - https://hub.docker.com/_/php/
-# - https://hub.docker.com/_/nginx/
+FROM nginx:1.15-alpine as http
 
-## HTTP STAGE ##
-FROM alpine:3.7 as http
-
-RUN apk add --no-cache --virtual .persistent-deps ca-certificates curl tar xz
-
-# <necessary users>
+# Add usabilla user and group
 RUN set -x \
-    && addgroup -g 1000 usabilla \
-    && adduser -u 1000 -D -G usabilla usabilla \
-    && addgroup -S nginx \
-    && adduser -D -S -h /var/cache/nginx -s /sbin/nologin -G nginx -G usabilla nginx
-# </necessary users>
+    && addgroup -g 1000 app \
+    && adduser -u 1000 -D -G app app
 
-# <env definition>
-ENV GPG_SERVERS ha.pool.sks-keyservers.net hkp://keyserver.ubuntu.com:80 hkp://p80.pool.sks-keyservers.net:80 pgp.mit.edu
-ENV GPG_KEYS 1729F83938DA44E27BA0F4D3DBDB397470D12172 B1B44D8F021E4E2D6021E995DC9FF8D3EE5AF27F B0F4253373F8F6F510D42178520A9993A1C052F8
-
-ENV PHPIZE_DEPS autoconf dpkg-dev dpkg file g++ gcc libc-dev make pcre-dev pkgconf re2c
-ENV PHP_INI_DIR /usr/local/etc/php
-ENV PHP_EXTRA_CONFIGURE_ARGS --enable-fpm --with-fpm-user=usabilla --with-fpm-group=usabilla
-ENV PHP_VERSION 7.2.8
-ENV PHP_SHA256="53ba0708be8a7db44256e3ae9fcecc91b811e5b5119e6080c951ffe7910ffb0f"
-ENV PHP_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz/from/this/mirror"
-ENV PHP_ASC_URL="https://secure.php.net/get/php-$PHP_VERSION.tar.xz.asc/from/this/mirror"
-
-## Apply stack smash protection to functions using local buffers and alloca()
-## Make PHP's main executable position-independent (improves ASLR security mechanism, and has no performance impact on x86_64)
-## Enable optimization (-O2)
-## Enable linker optimization (this sorts the hash buckets to improve cache locality, and is non-default)
-## Adds GNU HASH segments to generated executables (this is used if present, and is much faster than sysv hash; in this configuration, sysv hash is also generated)
-## https://github.com/docker-library/php/issues/272
-ENV PHP_CFLAGS="-fstack-protector-strong -fpic -fpie -O2"
-ENV PHP_CPPFLAGS="$PHP_CFLAGS"
-ENV PHP_LDFLAGS="-Wl,-O1 -Wl,--hash-style=both -pie"
-
-ENV NGINX_VERSION 1.15.2
+# Env definition
 ENV NGINX_DOCUMENT_ROOT="/var/www/html"
 ENV NGINX_SERVER_NAME=localhost
 ENV NGINX_WORKERS_PROCESSES=1
 ENV NGINX_WORKERS_CONNECTIONS=1024
 ENV NGINX_KEEPALIVE_TIMEOUT=65
 ENV NGINX_EXPOSE_VERSION=off
-# </env definition>
 
-# <copy installation>
-COPY common/php/install/* /root/php-install/
-COPY http/php-fpm/install/* /root/php-install/
-COPY http/nginx/install/* /root/nginx-install/
-COPY common/gnupg/fetch-keys.sh /usr/src/
-# </copy installation>
+# Nginx helper scripts
+COPY src/http/nginx/docker-nginx-* /usr/local/bin/
 
-# <download packages>
-RUN apk add --no-cache --virtual .fetch-deps gnupg libressl \
-    && export GNUPGHOME="$(mktemp -d)" \
-    && /usr/src/fetch-keys.sh \
-    && /root/php-install/download.sh \
-    && /root/nginx-install/download.sh \
-    && apk del .fetch-deps \
-    && rm -rf "$GNUPGHOME"
-# </download packages>
+# Nginx configuration files
+COPY src/http/nginx/conf/ /etc/nginx/
 
-# <installation>
-COPY common/php/docker-php-* /usr/local/bin/
-COPY http/nginx/docker-nginx-source /usr/local/bin/
-COPY http/nginx/docker-nginx-location.d-enable /usr/local/bin/
+CMD ["docker-nginx-entrypoint"]
 
-## PHP & Nginx installation
-RUN apk add --no-cache --virtual .build-deps $PHPIZE_DEPS \
-    coreutils \
-    curl-dev \
-    geoip-dev \
-    gd-dev \
-    libedit-dev \
-    libxml2-dev \
-    libxslt-dev \
-    linux-headers \
-    libressl-dev \
-    sqlite-dev \
-    zlib-dev \
-    && /root/php-install/compile.sh \
-    && /root/php-install/configure-fpm.sh \
-    && /root/nginx-install/compile.sh \
-    && docker-php-ext-install opcache \
-    && pecl install apcu \
-    && docker-php-ext-enable apcu \
-    && apk del .build-deps
-
-## Supervisord installation
-RUN apk add --no-cache --virtual .supervisor-deps supervisor \
-    && mkdir /etc/supervisor.d
-
-RUN rm -rf /root/php-install/ /root/nginx-install/
-# </installation>
-
-# <configuration>
-## PHP configuration
-COPY common/php/conf/default.ini /usr/local/etc/php/conf.d/
-COPY http/php-fpm/conf/*.conf /usr/local/etc/php-fpm.d/
-
-## Supervisord configuration
-COPY common/supervisord/default.ini /etc/supervisor.d/
-COPY http/supervisord/services.ini /etc/supervisor.d/
-
-## Nginx configuration
-COPY http/nginx/conf/nginx.conf.template /root/
-COPY http/nginx/conf/vhost.conf.template /root/
-COPY http/nginx/conf/location.d /etc/nginx/location.d-available
-RUN mkdir /etc/nginx/location.d-enabled
-# </configuration>
-
-EXPOSE 80
-STOPSIGNAL SIGTERM
-
-CMD ["/usr/bin/supervisord"]
-
-## HTTP-DEV STAGE ##
 FROM http as http-dev
 
 ENV NGINX_EXPOSE_VERSION=on
-
-EXPOSE 9000
-
-RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && pecl clear-cache \
-    && docker-php-ext-enable xdebug \
-    && apk del .phpize-deps
-
-COPY common/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
