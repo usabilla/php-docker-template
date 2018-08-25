@@ -49,3 +49,20 @@ ci-docker-login:
 
 lint:
 	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http
+
+test:
+	docker-compose -p php-docker-template-tests up --force-recreate --build -d \
+		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
+	docker run --rm -t \
+		--network phpdockertemplatetests_backend-php \
+		-v "${current_dir}/test:/tests" \
+		-v /var/run/docker.sock:/var/run/docker.sock:ro \
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1' -m php \
+		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
+	docker run --rm -t \
+		--network phpdockertemplatetests_backend-php \
+		-v "${current_dir}/test:/tests" \
+		-v /var/run/docker.sock:/var/run/docker.sock:ro \
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1' -m nginx	 \
+		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
+	docker-compose -p php-docker-template-tests down

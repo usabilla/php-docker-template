@@ -5,6 +5,7 @@ workflows:
   test:
     jobs:
       - lint
+      - test
   build-and-push:
     jobs:
       - http:
@@ -44,3 +45,9 @@ jobs:
     steps:
       - checkout
       - run: make lint
+  test:
+    machine: true
+    steps:
+      - checkout
+      - run: make build
+      - run: make test
