@@ -51,7 +51,11 @@ jobs:
     machine: true
     steps:
       - checkout
-      - run: make test
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - run: make ci-test
   build-http:
     machine: true
     steps:
@@ -63,6 +67,7 @@ jobs:
           root: ./tmp
           paths:
             - usabillabv_php-http.tar
+            - build-http.tags
   build-fpm:
     machine: true
     steps:
@@ -74,6 +79,7 @@ jobs:
           root: ./tmp
           paths:
             - usabillabv_php-fpm.tar
+            - build-fpm.tags
   build-cli:
     machine: true
     steps:
@@ -85,18 +91,28 @@ jobs:
           root: ./tmp
           paths:
             - usabillabv_php-cli.tar
+            - build-cli.tags
   push-http:
     machine: true
     steps:
       - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-http.tar
       - run: make ci-push-http
   push-cli:
     machine: true
     steps:
       - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-cli.tar
       - run: make ci-push-cli
   push-fpm:
     machine: true
     steps:
       - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
       - run: make ci-push-fpm
