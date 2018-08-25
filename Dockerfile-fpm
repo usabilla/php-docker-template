@@ -1,0 +1,37 @@
+FROM php:7.2-fpm-alpine3.7 as fpm
+
+# Add usabilla user and group
+RUN set -x \
+    && addgroup -g 1000 app \
+    && adduser -u 1000 -D -G app app
+
+# Install PHP extensions
+RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && docker-php-ext-install opcache \
+    && pecl install apcu \
+    && pecl clear-cache \
+    && docker-php-ext-enable apcu \
+    # those deletions happen since the helper scripts nor the official image are removing them
+    && rm -rf /usr/src/php* && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
+    && apk del .phpize-deps
+
+COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
+COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
+
+STOPSIGNAL SIGTERM
+
+VOLUME [ "/var/run" ]
+
+## FPM-DEV STAGE ##
+FROM fpm as fpm-dev
+
+# Enable XDebug
+RUN set -x \
+    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && pecl install xdebug \
+    && docker-php-ext-enable xdebug \
+    && pecl clear-cache \
+    && rm -rf /usr/src/php* \
+    && apk del .phpize-deps 
+
+COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
