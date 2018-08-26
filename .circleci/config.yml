@@ -1,49 +1,63 @@
 version: 2
 
+default_workflow_jobs: &default_workflow_jobs
+  - lint
+  - lint-shell
+  - build-http:
+      requires:
+        - lint
+        - lint-shell
+  - build-fpm:
+      requires:
+        - lint
+        - lint-shell
+  - build-cli:
+      requires:
+        - lint
+        - lint-shell
+  - test:
+      requires:
+        - build-http
+        - build-fpm
+        - build-cli
+  - push-http:
+      context: dockerhub
+      filters:
+        branches:
+          only: 
+            - master
+      requires:
+        - test
+  - push-fpm:
+      context: dockerhub
+      filters:
+        branches:
+          only: 
+            - master
+      requires:
+        - test
+  - push-cli:
+      context: dockerhub
+      filters:
+        branches:
+          only: 
+            - master
+      requires:
+        - test
+
 workflows:
   version: 2
   lint-build-test-push:
-    jobs:
-      - lint
-      - lint-shell
-      - build-http:
-          requires:
-            - lint
-            - lint-shell
-      - build-fpm:
-          requires:
-            - lint
-            - lint-shell
-      - build-cli:
-          requires:
-            - lint
-            - lint-shell
-      - test:
-          requires:
-            - build-http
-            - build-fpm
-            - build-cli
-      - push-http:
-          context: dockerhub
+    jobs: *default_workflow_jobs
+  nightly:
+    jobs: *default_workflow_jobs
+    triggers:
+      - schedule:
+          cron: "0 3 * * *"
           filters:
             branches:
-              only: master
-          requires:
-            - test
-      - push-fpm:
-          context: dockerhub
-          filters:
-            branches:
-              only: master
-          requires:
-            - test
-      - push-cli:
-          context: dockerhub
-          filters:
-            branches:
-              only: master
-          requires:
-            - test
+              only:
+                - master
 
 jobs:
   lint:
