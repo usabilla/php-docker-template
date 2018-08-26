@@ -79,9 +79,9 @@ ci-test:
 		--network phpdockertemplatetests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1' -m php
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1' -m php --junitxml=/tests/test-results/php.xml
 	docker run --rm -t \
 		--network phpdockertemplatetests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1' -m nginx
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1' -m nginx --junitxml=/tests/test-results/nginx.xml
