@@ -3,7 +3,7 @@ push: build push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
 ci-push-http: ci-docker-login push-http
-qa: build test lint
+qa: lint lint-shell build test 
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(abspath $(patsubst %/,%,$(dir $(mkfile_path))))
@@ -52,6 +52,9 @@ ci-docker-login:
 
 lint:
 	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http
+
+lint-shell:
+	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/* build*
 
 test:
 	docker-compose -p php-docker-template-tests up --force-recreate --build -d \

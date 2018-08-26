@@ -5,15 +5,19 @@ workflows:
   lint-build-test-push:
     jobs:
       - lint
+      - lint-shell
       - build-http:
           requires:
             - lint
+            - lint-shell
       - build-fpm:
           requires:
             - lint
+            - lint-shell
       - build-cli:
           requires:
             - lint
+            - lint-shell
       - test:
           requires:
             - build-http
@@ -47,6 +51,11 @@ jobs:
     steps:
       - checkout
       - run: make lint
+  lint-shell:
+    machine: true
+    steps:
+      - checkout
+      - run: make lint-shell
   test:
     machine: true
     steps:

@@ -10,14 +10,14 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-if [ ! -f $SOURCE_PATH ]; then
+if [ ! -f "$SOURCE_PATH" ]; then
     echo "Configuration at $SOURCE_PATH does not exist"
     exit 1
 fi
 
-if [ -f $TARGET_PATH ]; then
+if [ -f "$TARGET_PATH" ]; then
     echo "Configuration at $TARGET_PATH already exists"
     exit 1
 fi
 
-ln -s $SOURCE_PATH $TARGET_PATH
+ln -s "$SOURCE_PATH" "$TARGET_PATH"
