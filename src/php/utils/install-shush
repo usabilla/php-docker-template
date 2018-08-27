@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -xe
+
+curl -sL -o /usr/local/bin/shush https://github.com/realestate-com-au/shush/releases/download/v1.3.4/shush_linux_amd64
+
+chmod +x /usr/local/bin/shush
+
+shush -v
+
+RESULT=$?
+
+exit $RESULT
