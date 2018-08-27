@@ -20,6 +20,11 @@ default_workflow_jobs: &default_workflow_jobs
         - build-http
         - build-fpm
         - build-cli
+  - scan-vulnerability:
+      requires:
+        - build-http
+        - build-fpm
+        - build-cli
   - push-http:
       context: dockerhub
       filters:
@@ -28,6 +33,7 @@ default_workflow_jobs: &default_workflow_jobs
             - master
       requires:
         - test
+        - scan-vulnerability
   - push-fpm:
       context: dockerhub
       filters:
@@ -36,6 +42,8 @@ default_workflow_jobs: &default_workflow_jobs
             - master
       requires:
         - test
+        - scan-vulnerability
+        
   - push-cli:
       context: dockerhub
       filters:
@@ -44,6 +52,7 @@ default_workflow_jobs: &default_workflow_jobs
             - master
       requires:
         - test
+        - scan-vulnerability
 
 workflows:
   version: 2
@@ -86,6 +95,28 @@ jobs:
       - run: make ci-test
       - store_test_results:
           path: ./test/test-results/
+  scan-vulnerability:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run:
+          name: Update Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
+      - run:
+          name: Install clair-scanner
+          command: |
+            sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
+            sudo chmod +x /usr/local/bin/clair-scanner
+      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - run: make ci-scan-vulnerability
+      - store_artifacts:
+          path: ./tmp/clair
   build-http:
     machine: true
     steps:
