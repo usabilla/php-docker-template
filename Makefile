@@ -60,28 +60,28 @@ test:
 	docker-compose -p php-docker-template-tests up --force-recreate --build -d \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker run --rm -t \
-		--network phpdockertemplatetests_backend-php \
+		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1' -m php \
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m php \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker run --rm -t \
-		--network phpdockertemplatetests_backend-php \
+		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1' -m nginx	 \
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx	 \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker-compose -p php-docker-template-tests down
 
 ci-test:
-	docker-compose -p php-docker-template-tests up -d
+	docker-compose -p php-docker-template-tests up --force-recreate -d
 	docker run --rm -t \
-		--network phpdockertemplatetests_backend-php \
+		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_php_fpm_1' -m php --junitxml=/tests/test-results/php.xml
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m php --junitxml=/tests/test-results/php.xml
 	docker run --rm -t \
-		--network phpdockertemplatetests_backend-php \
+		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://phpdockertemplatetests_nginx_1' -m nginx --junitxml=/tests/test-results/nginx.xml
+		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx --junitxml=/tests/test-results/nginx.xml
