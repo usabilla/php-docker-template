@@ -1,18 +1,14 @@
 version: '3.2'
 services:
   php_fpm:
-    build:
-      context: ./
-      dockerfile: ./Dockerfile-fpm
+    image: usabillabv/php:7.2-fpm-alpine3.8
     volumes:
       - fpm-sock:/var/run
       - ./test:/var/www/html
     networks:
       - backend-php
   nginx:
-    build:
-      context: ./
-      dockerfile: ./Dockerfile-http
+    image: usabillabv/php:nginx
     ports:
       - 8080:80
     volumes:

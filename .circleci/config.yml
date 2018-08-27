@@ -1,53 +1,143 @@
 version: 2
 
+default_workflow_jobs: &default_workflow_jobs
+  - lint
+  - lint-shell
+  - build-http:
+      requires:
+        - lint
+        - lint-shell
+  - build-fpm:
+      requires:
+        - lint
+        - lint-shell
+  - build-cli:
+      requires:
+        - lint
+        - lint-shell
+  - test:
+      requires:
+        - build-http
+        - build-fpm
+        - build-cli
+  - push-http:
+      context: dockerhub
+      filters:
+        branches:
+          only: 
+            - master
+      requires:
+        - test
+  - push-fpm:
+      context: dockerhub
+      filters:
+        branches:
+          only: 
+            - master
+      requires:
+        - test
+  - push-cli:
+      context: dockerhub
+      filters:
+        branches:
+          only: 
+            - master
+      requires:
+        - test
+
 workflows:
   version: 2
-  test:
-    jobs:
-      - lint
-      - test
-  build-and-push:
-    jobs:
-      - http:
-          context: dockerhub
+  lint-build-test-push:
+    jobs: *default_workflow_jobs
+  nightly:
+    jobs: *default_workflow_jobs
+    triggers:
+      - schedule:
+          cron: "0 3 * * *"
           filters:
             branches:
-              only: /master/
-      - cli:
-          context: dockerhub
-          filters:
-            branches:
-              only: /master/
-      - fpm:
-          context: dockerhub
-          filters:
-            branches:
-              only: /master/
+              only:
+                - master
 
 jobs:
-  http:
-    machine: true
-    steps:
-      - checkout
-      - run: make ci-push-http
-  cli:
-    machine: true
-    steps:
-      - checkout
-      - run: make ci-push-cli
-  fpm:
-    machine: true
-    steps:
-      - checkout
-      - run: make ci-push-fpm
   lint:
     machine: true
     steps:
       - checkout
       - run: make lint
+  lint-shell:
+    machine: true
+    steps:
+      - checkout
+      - run: make lint-shell
   test:
     machine: true
     steps:
       - checkout
-      - run: make build
-      - run: make test
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - run: make ci-test
+      - store_test_results:
+          path: ./test/test-results/
+  build-http:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-http
+      - run: cat ./tmp/build-http.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 1}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-http.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-http.tar
+            - build-http.tags
+  build-fpm:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-fpm
+      - run: cat ./tmp/build-fpm.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 8}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-fpm.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-fpm.tar
+            - build-fpm.tags
+  build-cli:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-cli
+      - run: cat ./tmp/build-cli.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 7}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-cli.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-cli.tar
+            - build-cli.tags
+  push-http:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - run: make ci-push-http
+  push-cli:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - run: make ci-push-cli
+  push-fpm:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - run: make ci-push-fpm
