@@ -76,6 +76,11 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
+      - run:
+          name: Update Docker Compose
+          command: |
+            sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+            sudo chmod +x /usr/local/bin/docker-compose
       - run: docker load -i ./tmp/usabillabv_php-http.tar
       - run: docker load -i ./tmp/usabillabv_php-fpm.tar
       - run: make ci-test
