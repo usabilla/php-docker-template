@@ -3,22 +3,16 @@ server {
     listen [::]:80;
     server_name  ${NGINX_SERVER_NAME};
 
-    root   ${NGINX_DOCUMENT_ROOT};
-    index  index.php index.html index.htm;
+    root    ${NGINX_DOCUMENT_ROOT};
     charset UTF-8;
-
-    location / {
-        try_files ${ESCAPE}uri /index.php${ESCAPE}is_args${ESCAPE}args;
-    }
 
     error_page   500 502 503 504  /50x.html;
     location = /50x.html {
         root   /usr/share/nginx/html;
     }
-
-    location = /favicon.ico {
-        log_not_found off;
-        access_log off;
+    
+    location / {
+        rewrite ^ /index.php last;
     }
 
     location ~ \.php$ {
@@ -27,7 +21,7 @@ server {
 
         include        fastcgi_params;
 
-        fastcgi_param SCRIPT_FILENAME ${ESCAPE}realpath_root${ESCAPE}fastcgi_script_name;
-        fastcgi_param DOCUMENT_ROOT ${ESCAPE}realpath_root;
+        fastcgi_param SCRIPT_FILENAME ${ESCAPE}document_root${ESCAPE}fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT ${ESCAPE}document_root;
     }
 }

@@ -20,7 +20,7 @@ def test_fpm_can_create_file(host):
   host.run("rm {0}".format(testFile))
 
   assert host.file(testFile).exists is False
-  host.run("wget http://nginx/filesystem.php")
+  host.run("wget -O /dev/null http://nginx?testFile=true")
   assert host.file(testFile).exists is True
   assert host.file(testFile).user == "app"
   assert host.file(testFile).group == "app"
