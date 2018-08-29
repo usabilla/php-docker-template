@@ -1,39 +1,136 @@
 # PHP docker template
 
-A base image for PHP application that provides a webserver instead of only the
-`php-fpm` process.
+A series of Docker images to run PHP Applications on Usabilla Style
 
-## What's installed
+## Images available
 
-It's built based on the [official Alpine Linux image](https://hub.docker.com/_/alpine/) (3.7) and bundles:
+All being based on the official images we provide:
 
-- PHP 7.2 inpired by the [official image](https://hub.docker.com/_/php/)
-- Nginx 1.13 inspired by the [official image](https://hub.docker.com/_/nginx/)
-- Supervisord 3.2
+- PHP cli - Compiled without php-fpm, a simple php binary image
+- PHP fpm - Specifically designed to share the php-fpm socket towards a fastcgi compliant websever
+- Nginx - Meant for PHP projects built on the PHP FPM image in this repository, since it looks for a php-fpm socket and doesn't have access to the PHP code
+
+### Extra software
+
+- PHP
+  - Shush - Used for decrypting our secret variables using AWS KMS
+  - composer - To provide the installation of PHP projects
+- Nginx
+  - A location.d helper to enable/disable custom location configuration
+
+## The base images
+
+All images are based on their official variants, being:
+
+- [PHP official image](https://hub.docker.com/_/php/)
+- [Nginx official image](https://hub.docker.com/_/alpine/)
+- Both PHP and Nginx images are based on [Alpine Linux](https://hub.docker.com/_/alpine/)
+
+## Alpine Linux situation
+
+Even though both of the images are based on the Alpine Linux, the PHP official repository gives us the option to choose between its versions, at this moment being `3.7` or `3.8`.
+
+Meanwhile on the official Nginx images we have no control over which Alpine version we use, this explains the tagging strategy coming in the next section.
+
+## The available tags
+
+The docker registry prefix is `usabillabv/php`, thus `usabillabv/php:OUR-TAGS`
+
+In order to provide upgrade path we intend to keep one or more versions of PHP and Nginx.
+
+[Currently Available tags on Docker hub](https://hub.docker.com/r/usabillabv/php/tags/)
+
+The tag naming strategy consists of (Read as a regex):
+
+- PHP: `(phpMajor).(phpMinor)-(cli|fpm)-(alpine|future supported OSes)(alpineMajor).(alpineMinor)(-dev)?`
+  - Example: `7.2-fpm-alpine3.8`, `7.2-fpm-alpine3.8-dev`
+  - Note: The minor version might come followed by special versioning constraints in case of betas, etc. For instance: `7.3-rc-fpm-alpine3.8-dev`
+- Nginx: `nginx(major).(minor)(-dev)?`
+  - Example: `nginx1.15`, `nginx1.15-dev`
+
+## Adding more supported versions
+
+The whole CI/CD pipeline is centralized in Makefile targets, the build of cli, fpm and http (for now only nginx) images have their targets named as `build-cli`, `build-fpm` and `build-http`
+
+With the help of building scripts the addition of new versions is as easy as updating the Makefile with the desired new version.
+
+All the newly built versions are going to be automatically tagged and pushed upon CI/CD success, to see the output of your new changes you can see the `(BUILD).tags` file in the `tmp` directory
+
+### PHP
+
+In this example adding PHP 7.3-rc for cli and fpm:
+
+```diff
+build-cli: clean-tags
+	./build-php.sh cli 7.2 3.7
+	./build-php.sh cli 7.2 3.8
++	./build-php.sh cli 7.3-rc 3.8
+
+build-fpm: clean-tags
+	./build-php.sh fpm 7.2 3.7
+	./build-php.sh fpm 7.2 3.8
++	./build-php.sh fpm 7.3-rc 3.8
+```
+
+Being `./build-php.sh (cli/fpm) (PHP version) (Alpine version)`
+
+### Nginx
+
+In this example adding Nginx 1.16:
+
+```diff
+build-http: clean-tags
+	./build-nginx.sh 1.15 nginx
+	./build-nginx.sh 1.14
++	./build-nginx.sh 1.16
+```
+
+Being `./build-nginx.sh (nginx version) (extra tag)`
+
+Note you can add extra tags, this means if you want to make Nginx 1.16 our new default version you have to:
+
+```diff
+build-http: clean-tags
+-	./build-nginx.sh 1.15 nginx
++	./build-nginx.sh 1.15
+	./build-nginx.sh 1.14
+-	./build-nginx.sh 1.16
++	./build-nginx.sh 1.16 nginx
+```
+
+### Important
+
+Removing a version from the build won't make it be removed from Docker registry, this has to be a manual operation if desired.
 
 ## Using and extending
 
-Simply use this as image base of the application's `Dockerfile` and apply the
+Simply use the images as base of the application's `Dockerfile` and apply the
 necessary changes.
+In usual cases it might not be necessary to extend the nginx images, unless you desired extend it's behavior by for instance serving static files.
 
+[Nginx customization](#for-nginx-customization)
+
+[PHP customization](#for-php-customization)
+
+## For Nginx customization
 
 ### Document root configuration
 
 Nginx is configured with only one virtual host, which is using `/var/www/html`
 as document root. Ideally we should change this configuration to point to the
-`public` folder of our project, so that we expose only what's necessary.
+`public` directory of our project, so that we expose only what's necessary.
 
 In order to do this you should override `NGINX_DOCUMENT_ROOT` environment
 variable in the `Dockerfile`, e.g.:  
 
 ```Dockerfile
 # assuming that your project is mounted/copied to `/project` and it has a public
-# folder...
+# directory...
 
 ENV NGINX_DOCUMENT_ROOT="/project/public"
 ```
 
-### Server name configuration 
+### Server name configuration
 
 The default server name is `localhost` and that can also be overridden using an
 environment variable (`NGINX_SERVER_NAME`) in the `Dockerfile`, e.g.:  
@@ -42,7 +139,7 @@ environment variable (`NGINX_SERVER_NAME`) in the `Dockerfile`, e.g.:
 ENV NGINX_SERVER_NAME="myawesomeservice myawesomeservice.usabilla.com"
 ```
 
-### Nginx workers
+### Workers
 
 To use the most of your server you can tweak the number of nginx workers and
 connections accepted by them, the default values are (respectively): `1` and
@@ -55,7 +152,7 @@ ENV NGINX_WORKERS_PROCESSES="4"
 ENV NGINX_WORKERS_CONNECTIONS="2048"
 ```
 
-### Nginx connection keep alive timeout
+### Connection keep alive timeout
 
 The default server name is `65` and that can also be overridden using an
 environment variable (`NGINX_KEEPALIVE_TIMEOUT`) in the `Dockerfile`, e.g.:
@@ -64,7 +161,7 @@ environment variable (`NGINX_KEEPALIVE_TIMEOUT`) in the `Dockerfile`, e.g.:
 ENV NGINX_KEEPALIVE_TIMEOUT="30"
 ```
 
-### Nginx version
+### Expose Nginx version
 
 By default we are not exposing the nginx version in the `Server` header, that
 can also be overridden using an environment variable (`NGINX_EXPOSE_VERSION`)
@@ -74,14 +171,15 @@ in the `Dockerfile`, e.g.:
 ENV NGINX_EXPOSE_VERSION="on"
 ```
 
+## For PHP customization
+
 ### Installing & enabling PHP extensions
 
-This image bundles the same scripts available in the official PHP images to
-manage PHP extensions (`docker-php-ext-configure`, `docker-php-ext-install`, and
-`docker-php-ext-enable`), so it's quite simple to install core and PECL
-extensions.
+This image bundles helper scripts to manage PHP extensions (`docker-php-ext-configure`, `docker-php-ext-install`, and `docker-php-ext-enable`), so it's quite simple to install core and PECL extensions.
 
-#### Core extensions
+More about it in the [Official Documentation](https://github.com/docker-library/docs/blob/master/php/README.md#how-to-install-more-php-extensions)
+
+#### PHP Core extensions
 
 To install a core extension that doesn't require any change on the way PHP was
 compiled you only need to use `docker-php-ext-install`, which will compile the
@@ -123,4 +221,3 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-enable xdebug \
     && apk del .phpize-deps
 ```
-
