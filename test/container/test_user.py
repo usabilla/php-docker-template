@@ -14,7 +14,7 @@ def test_userPresent(host):
   assert homeDir in usr.home
   assert shell in usr.shell
 
-@pytest.mark.php
+@pytest.mark.php_fpm
 def test_fpm_can_create_file(host):
   testFile = "/tmp/temptestfile" 
   host.run("rm {0}".format(testFile))

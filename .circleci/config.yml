@@ -92,6 +92,7 @@ jobs:
             sudo chmod +x /usr/local/bin/docker-compose
       - run: docker load -i ./tmp/usabillabv_php-http.tar
       - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - run: docker load -i ./tmp/usabillabv_php-cli.tar
       - run: make ci-test
       - store_test_results:
           path: ./test/test-results/
