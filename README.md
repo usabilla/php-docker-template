@@ -161,6 +161,16 @@ environment variable (`NGINX_KEEPALIVE_TIMEOUT`) in the `Dockerfile`, e.g.:
 ENV NGINX_KEEPALIVE_TIMEOUT="30"
 ```
 
+### Client body buffer size
+
+The default `client_body_buffer_size` is `8k|16k` (depending on architecture),
+having it configurable helps to not create disk body buffers in apps that don't
+splitting it, e.g.:
+
+```Dockerfile
+ENV NGINX_CLIENT_BODY_BUFFER_SIZE="64k"
+```
+
 ### Expose Nginx version
 
 By default we are not exposing the nginx version in the `Server` header, that
