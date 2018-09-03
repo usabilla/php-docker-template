@@ -21,6 +21,10 @@ COPY src/http/nginx/conf/ /etc/nginx/
 
 CMD ["docker-nginx-entrypoint"]
 
+# Base images don't need healthcheck since they are not running applications
+# this can be overriden in the child images
+HEALTHCHECK NONE
+
 FROM http as http-dev
 
 ENV NGINX_EXPOSE_VERSION=on
