@@ -198,13 +198,20 @@ your `Dockerfile`:
 
 ```Dockerfile
 # Enables opcache:
-RUN docker-php-ext-install opcache
+RUN set -x \
+    && apk add --no-cache gnupg \
+    && docker-php-source-tarball download \
+    && docker-php-ext-install opcache \
+    && docker-php-source-tarball delete
 
 # Installs PDO driver for PostgreSQL (temporarily adding postgresql-dev to have
 # the necessary C libraries):
-RUN apk add --no-cache postgresql-client postgresql-dev \
+RUN set -x \
+    && apk add --no-cache gnupg postgresql-client postgresql-dev \
+    && docker-php-source-tarball download \
     && docker-php-ext-install pdo_pgsql \
-    && apk del postgresql-dev
+    && docker-php-source-tarball delete \
+    && apk del gnupg postgresql-dev
 ```
 
 Some core extensions, like GD, requires changes to PHP compilation. For that you

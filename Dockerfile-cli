@@ -5,6 +5,9 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
+# Install docker help scripts
+COPY src/php/utils/docker/ /usr/local/bin/
+
 # Install PHP extensions
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
@@ -14,7 +17,7 @@ RUN set -x \
     && pecl clear-cache \
     && docker-php-ext-enable apcu \
     # Removing all PHP leftovers since the helper scripts nor the official image are removing them
-    && rm -rf /usr/src/php* && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
+    && docker-php-source-tarball clean && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
 
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
@@ -48,7 +51,7 @@ RUN set -x \
     && pecl install xdebug \
     && docker-php-ext-enable xdebug \
     && pecl clear-cache \
-    && rm -rf /usr/src/php* \
+    && docker-php-source-tarball clean \
     && apk del .phpize-deps 
 
 COPY src/php/conf/debug.ini /usr/local/etc/php/conf.d/zzz_debug.ini
