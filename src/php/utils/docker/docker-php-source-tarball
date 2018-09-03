@@ -1,0 +1,56 @@
+#!/bin/sh
+set -e
+
+DIR=/usr/src;
+
+mkdir -p "$DIR";
+cd "$DIR";
+
+usage() {
+	echo "usage: $0 COMMAND"
+	echo
+	echo "Manage php source tarball."
+	echo
+	echo "Commands:"
+	echo "   download  downloads php source tarball into directory $DIR if not already done."
+	echo "   delete    delete php source tarball located into $DIR if not already done."
+	echo "   clean     delete php source tarball and extracted located into $DIR if not already done."
+	echo
+}
+
+case "$1" in
+	download)
+        if [ -f "$DIR/php.tar.xz" ]; then
+            exit 0;
+        fi;
+		command -v gpg ||  { echo "Make sure gnupg is installed (i.e. apk add --no-cache gnupg). Aborting."; exit 1; }
+		command -v wget ||  { echo "Make sure wget is installed (i.e. apk add --no-cache wget). Aborting."; exit 1; }
+        
+		wget -O php.tar.xz "$PHP_URL";
+		wget -O php.tar.xz.asc "$PHP_ASC_URL";
+		echo "$PHP_SHA256 *php.tar.xz" | sha256sum -c -;
+		
+		GNUPGHOME="$(mktemp -d)";
+		export GNUPGHOME;
+		for key in $GPG_KEYS; do
+			gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key";
+		done;
+		gpg --batch --verify php.tar.xz.asc php.tar.xz;
+		command -v gpgconf > /dev/null && gpgconf --kill all;
+		rm -rf "$GNUPGHOME";
+		;;
+
+	delete)
+		rm -f "/usr/src/php.tar.xz" "/usr/src/php.tar.xz.asc"
+		;;
+
+	clean)
+		docker-php-source-tarball delete
+		docker-php-source delete
+		;;
+
+	*)
+		usage
+		exit 1
+		;;
+esac

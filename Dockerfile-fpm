@@ -5,6 +5,9 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
+# Install docker help scripts
+COPY src/php/utils/docker/ /usr/local/bin/
+
 # Install PHP extensions
 RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install opcache \
