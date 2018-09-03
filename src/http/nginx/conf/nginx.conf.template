@@ -17,7 +17,7 @@ http {
                     '${ESCAPE}status ${ESCAPE}body_bytes_sent "${ESCAPE}http_referer" '
                     '"${ESCAPE}http_user_agent" "${ESCAPE}http_x_forwarded_for"';
 
-    access_log /var/log/nginx/access.log gzip buffer=32k;
+    access_log /var/log/nginx/access.log;
     error_log /var/log/nginx/error.log notice;
 
     sendfile    on;
