@@ -27,6 +27,7 @@ http {
     keepalive_timeout ${NGINX_KEEPALIVE_TIMEOUT};
     types_hash_max_size 2048;
     server_tokens ${NGINX_EXPOSE_VERSION};
+    client_body_buffer_size ${NGINX_CLIENT_BODY_BUFFER_SIZE};
 
     gzip  on;
     gzip_disable "msie6";
