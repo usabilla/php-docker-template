@@ -1,14 +1,28 @@
-# PHP docker template
+# PHP Docker images template
 
 A series of Docker images to run PHP Applications on Usabilla Style
 
-## Images available
+## Basic architecture
 
 All being based on the official images we provide:
 
 - PHP cli - Compiled without php-fpm, a simple php binary image
 - PHP fpm - Specifically designed to share the php-fpm socket towards a fastcgi compliant websever
 - Nginx - Meant for PHP projects built on the PHP FPM image in this repository, since it looks for a php-fpm socket and doesn't have access to the PHP code
+
+The fpm/HTTP server relationship:
+```
++------------------------------+-----+            +--------------------+
+|                              | :80 |            |                    |
+|  FastCGI HTTP container      +-----+            |  PHP fpm container |
+|                                    |            |                    |
+|                                    |            |                    |
+|       +-------------------------+  |            |  +--------------+  |
+|       |  /var/run/php|fpm.sock  |<--------------+  |  Source code |  |
+|       +-------------------------+  |            |  +--------------+  |
+|                                    |            |                    |
++------------------------------------+            +--------------------+
+```
 
 ### Extra software
 
