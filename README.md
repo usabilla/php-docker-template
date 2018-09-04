@@ -185,6 +185,15 @@ splitting it, e.g.:
 ENV NGINX_CLIENT_BODY_BUFFER_SIZE="64k"
 ```
 
+### Client max body size
+
+The default `client_max_body_size` is `1m`, you can increase it in case of
+larger payloads, e.g.:
+
+```Dockerfile
+ENV NGINX_CLIENT_MAX_BODY_SIZE="8m"
+```
+
 ### Expose Nginx version
 
 By default we are not exposing the nginx version in the `Server` header, that
