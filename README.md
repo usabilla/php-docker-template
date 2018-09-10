@@ -157,8 +157,8 @@ ENV NGINX_SERVER_NAME="myawesomeservice myawesomeservice.usabilla.com"
 
 To use the most of your server you can tweak the number of nginx workers and
 connections accepted by them, the default values are (respectively): `1` and
-`1024`. These values can be overridden using environment variables (
-`NGINX_WORKERS_PROCESSES` and `NGINX_WORKERS_CONNECTIONS`) in the `Dockerfile`,
+`1024`. These values can be overridden using environment variables 
+(`NGINX_WORKERS_PROCESSES` and `NGINX_WORKERS_CONNECTIONS`) in the `Dockerfile`,
 e.g.:
 
 ```Dockerfile
@@ -166,14 +166,18 @@ ENV NGINX_WORKERS_PROCESSES="4"
 ENV NGINX_WORKERS_CONNECTIONS="2048"
 ```
 
+Documentation for [worker_processes](http://nginx.org/en/docs/ngx_core_module.html#worker_processes)
+and [worker_connections](http://nginx.org/en/docs/ngx_core_module.html#worker_connections)
+
 ### Connection keep alive timeout
 
-The default server name is `65` and that can also be overridden using an
-environment variable (`NGINX_KEEPALIVE_TIMEOUT`) in the `Dockerfile`, e.g.:
+The default `keepalive_timeout` is `75` and that can also be overridden using an environment variable (`NGINX_KEEPALIVE_TIMEOUT`) in the `Dockerfile`, e.g.:
 
 ```Dockerfile
 ENV NGINX_KEEPALIVE_TIMEOUT="30"
 ```
+
+More about it in the [Official documentation](http://nginx.org/en/docs/http/ngx_http_core_module.html#keepalive_timeout)
 
 ### Client body buffer size
 
@@ -185,6 +189,8 @@ splitting it, e.g.:
 ENV NGINX_CLIENT_BODY_BUFFER_SIZE="64k"
 ```
 
+More about it in the [Official documentation](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_body_buffer_size)
+
 ### Client max body size
 
 The default `client_max_body_size` is `1m`, you can increase it in case of
@@ -193,6 +199,8 @@ larger payloads, e.g.:
 ```Dockerfile
 ENV NGINX_CLIENT_MAX_BODY_SIZE="8m"
 ```
+
+More about it in the [Official documentation](http://nginx.org/en/docs/http/ngx_http_core_module.html#client_max_body_size)
 
 ### Large client header buffers
 
