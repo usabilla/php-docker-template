@@ -1,5 +1,7 @@
 FROM php:7.2-fpm-alpine3.7 as fpm
 
+ENV FCGI_CONNECT=/var/run/php-fpm.sock
+
 # Add usabilla user and group
 RUN set -x \
     && addgroup -g 1000 app \
@@ -16,7 +18,8 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-enable apcu \
     # those deletions happen since the helper scripts nor the official image are removing them
     && docker-php-source-tarball clean && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
-    && apk del .phpize-deps
+    && apk del .phpize-deps \
+    && apk add --no-cache fcgi
 
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/

@@ -38,3 +38,9 @@ def test_php_source_tarball_script(host):
 
   host.run("docker-php-source-tarball clean")
   assert host.file("/usr/src/php").exists is False
+
+@pytest.mark.php_fpm
+def test_php_fpm_status_is_enabled(host):
+    health_check = host.run("php-fpm-healthcheck -v")
+    assert health_check.rc == 0
+    assert "pool:" in health_check.stdout
