@@ -2,6 +2,10 @@
 
 A series of Docker images to run PHP Applications on Usabilla Style
 
+## Architecture Decisions Records
+
+This project adheres to ADRs, a [list can be found here](docs/adr/).
+
 ## Basic architecture
 
 All being based on the official images we provide:
