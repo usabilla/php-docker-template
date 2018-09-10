@@ -29,6 +29,7 @@ http {
     server_tokens ${NGINX_EXPOSE_VERSION};
     client_body_buffer_size ${NGINX_CLIENT_BODY_BUFFER_SIZE};
     client_max_body_size ${NGINX_CLIENT_MAX_BODY_SIZE};
+    large_client_header_buffers ${NGINX_LARGE_CLIENT_HEADER_BUFFERS};
 
     gzip  on;
     gzip_disable "msie6";

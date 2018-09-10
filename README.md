@@ -194,6 +194,17 @@ larger payloads, e.g.:
 ENV NGINX_CLIENT_MAX_BODY_SIZE="8m"
 ```
 
+### Large client header buffers
+
+The default `large_client_header_buffers` is `4 8k`, being `number size` you can
+increase it in case of larger header payloads, e.g.:
+
+```Dockerfile
+ENV NGINX_LARGE_CLIENT_HEADER_BUFFERS="8 128k"
+```
+
+More about it in the [Official documentation](http://nginx.org/en/docs/http/ngx_http_core_module.html#large_client_header_buffers)
+
 ### Expose Nginx version
 
 By default we are not exposing the nginx version in the `Server` header, that
