@@ -29,9 +29,6 @@ RUN install-shush && rm -rf /usr/local/bin/install-shush
 COPY src/php/utils/install-composer /usr/local/bin/
 RUN install-composer && rm -rf /usr/local/bin/install-composer
 
-# Patch CVE-2018-0500
-RUN apk add --no-cache curl=7.61.0-r0
-
 STOPSIGNAL SIGTERM
 
 CMD ["/usr/local/bin/shush", "exec", "php-fpm", "--force-stderr"]
