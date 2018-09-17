@@ -284,3 +284,12 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-enable xdebug \
     && apk del .phpize-deps
 ```
+
+```Dockerfile
+# Installs MongoDB Driver (temporarily adding the necessary libraries):
+RUN set -x \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS openssl-dev  \
+    && pecl install mongodb-1.5.2 \
+    && docker-php-ext-enable mongodb \
+    && apk del .build-deps
+```
