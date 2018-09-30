@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 default_workflow_jobs: &default_workflow_jobs
   - lint
@@ -76,6 +76,33 @@ workflows:
               only:
                 - master
 
+commands:
+  update_docker_compose:
+    description: "Update Docker Compose"
+    parameters:
+      version:
+        type: string
+        default: "1.22.0"
+    steps:
+      - run: sudo curl -L https://github.com/docker/compose/releases/download/<< parameters.version >>/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
+      - run: sudo chmod +x /usr/local/bin/docker-compose
+  docker_load:
+    description: "Load Docker images from file"
+    parameters:
+      image:
+        type: string
+    steps:
+      - run: docker load -i ./tmp/usabillabv_php-<< parameters.image >>.tar
+  docker_load_all:
+    description: "Load all available docker images"
+    steps:
+      - docker_load:
+          image: http
+      - docker_load:
+          image: fpm
+      - docker_load:
+          image: cli
+
 jobs:
   lint:
     machine: true
@@ -93,14 +120,9 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run:
-          name: Update Docker Compose
-          command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - update_docker_compose:
+          version: "1.22.0"
+      - docker_load_all
       - run: make ci-test-cli
       - store_test_results:
           path: ./test/test-results/
@@ -115,9 +137,7 @@ jobs:
           command: |
             sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
             sudo chmod +x /usr/local/bin/docker-compose
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load_all
       - run: make ci-test-fpm
       - store_test_results:
           path: ./test/test-results/
@@ -127,19 +147,14 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run:
-          name: Update Docker Compose
-          command: |
-            sudo curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-$(uname -s)-$(uname -m) -o /usr/local/bin/docker-compose
-            sudo chmod +x /usr/local/bin/docker-compose
+      - update_docker_compose:
+          version: "1.22.0"
       - run:
           name: Install clair-scanner
           command: |
             sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
             sudo chmod +x /usr/local/bin/clair-scanner
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load_all
       - run: make ci-scan-vulnerability
       - store_artifacts:
           path: ./tmp/clair
@@ -185,7 +200,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - docker_load:
+          image: http
       - run: make ci-push-http
   push-cli:
     machine: true
@@ -193,7 +209,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load:
+          image: cli
       - run: make ci-push-cli
   push-fpm:
     machine: true
@@ -201,5 +218,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: fpm
       - run: make ci-push-fpm
