@@ -21,6 +21,9 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && apk del .phpize-deps \
     && apk add --no-cache fcgi
 
+# Patch CVE-2018-14618
+RUN apk upgrade --no-cache curl
+
 COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
