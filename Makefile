@@ -63,19 +63,19 @@ test:
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm" \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker run --rm -t \
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli" \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker run --rm -t \
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx	 \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx	 \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker-compose -p php-docker-template-tests down
 
@@ -85,17 +85,17 @@ ci-test:
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm" --junitxml=/tests/test-results/php-fpm.xml
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm" --junitxml=/tests/test-results/php-fpm.xml
 	docker run --rm -t \
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli" --junitxml=/tests/test-results/php-cli.xml
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli" --junitxml=/tests/test-results/php-cli.xml
 	docker run --rm -t \
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:latest --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx --junitxml=/tests/test-results/nginx.xml
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx --junitxml=/tests/test-results/nginx.xml
 
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d
