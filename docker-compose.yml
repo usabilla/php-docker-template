@@ -11,7 +11,7 @@ services:
     image: usabillabv/php:7.2-fpm-alpine3.8
     volumes:
       - fpm-sock:/var/run
-      - ./test:/var/www/html
+      - ./test/functional/web:/var/www/html
     networks:
       - backend-php
   nginx:
@@ -20,7 +20,6 @@ services:
       - 8080:80
     volumes:
       - fpm-sock:/var/run
-      - ./test:/var/www/html
     networks:
       - backend-php
 
