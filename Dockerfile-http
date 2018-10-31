@@ -6,7 +6,7 @@ RUN set -x \
     && adduser -u 1000 -D -G app app
 
 # Env definition
-ENV NGINX_DOCUMENT_ROOT="/var/www/html"
+ENV NGINX_DOCUMENT_ROOT="/opt/project/public"
 ENV NGINX_SERVER_NAME=localhost
 ENV NGINX_WORKERS_PROCESSES=1
 ENV NGINX_WORKERS_CONNECTIONS=1024

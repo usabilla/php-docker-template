@@ -135,7 +135,7 @@ In usual cases it might not be necessary to extend the nginx images, unless you 
 
 ### Document root configuration
 
-Nginx is configured with only one virtual host, which is using `/var/www/html` as document root. Ideally we should change this configuration to point to the `public` directory of our project, so that we expose only what's necessary.
+Nginx is configured with only one virtual host, which is using `/opt/project/public` as document root. Ideally we should change this configuration to point to the `public` directory of our project, so that we expose only what's necessary.
 
 In order to do this you should override `NGINX_DOCUMENT_ROOT` environment variable in the `Dockerfile`, e.g.:  
 
