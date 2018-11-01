@@ -4,13 +4,26 @@ services:
     image: usabillabv/php:7.2-cli-alpine3.8
     command: 
       - "-r"
-      - "while (true){};"
+      - "while (true){sleep(1);};"
+    networks:
+      - backend-php
+  php_cli_dev:
+    image: usabillabv/php:7.2-cli-alpine3.8-dev
+    command: 
+      - "-r"
+      - "while (true){sleep(1);};"
     networks:
       - backend-php
   php_fpm:
     image: usabillabv/php:7.2-fpm-alpine3.8
     volumes:
       - fpm-sock:/var/run
+      - ./test/functional/web:/opt/project/public
+    networks:
+      - backend-php
+  php_fpm_dev:
+    image: usabillabv/php:7.2-fpm-alpine3.8-dev
+    volumes:
       - ./test/functional/web:/opt/project/public
     networks:
       - backend-php

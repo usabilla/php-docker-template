@@ -63,13 +63,25 @@ test:
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm" \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm or php_no_dev and not php_dev" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker run --rm -t \
 		--network php-docker-template-tests_backend-php \
 		-v "${current_dir}/test:/tests" \
 		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli" \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_dev_1' -m "php or php_dev" \
+		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
+	docker run --rm -t \
+		--network php-docker-template-tests_backend-php \
+		-v "${current_dir}/test:/tests" \
+		-v /var/run/docker.sock:/var/run/docker.sock:ro \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli or php_no_dev and not php_dev" \
+		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
+	docker run --rm -t \
+		--network php-docker-template-tests_backend-php \
+		-v "${current_dir}/test:/tests" \
+		-v /var/run/docker.sock:/var/run/docker.sock:ro \
+		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_dev_1' -m "php or php_cli or php_dev" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker run --rm -t \
 		--network php-docker-template-tests_backend-php \
