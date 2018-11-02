@@ -1,0 +1,47 @@
+#!/bin/sh
+set -e
+
+usage() {
+	echo "usage: $0 COMMAND"
+	echo
+	echo "Turns PHP into development mode."
+	echo "There's not option to revert it since this should only be executed for dev images or runtime debugging."
+	echo
+	echo "Commands:"
+	echo "   xdebug  downloads, installs and enable xdebug in the container"
+	echo "   config  adds standard development configuration for PHP"
+	echo
+}
+
+case "$1" in
+	xdebug)
+		apkDel=
+		if [ -n "$PHPIZE_DEPS" ]; then
+			if apk info --installed .phpize-deps-configure > /dev/null; then
+				apkDel='.phpize-deps-configure'
+			elif ! apk info --installed .phpize-deps > /dev/null; then
+				# shellcheck disable=SC2086
+				apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS
+				apkDel='.phpize-deps'
+			fi
+		else
+			>&2 echo "\$PHPIZE_DEPS env variable is necessary to run this script"
+			exit 1
+		fi
+
+		pecl install xdebug
+		docker-php-ext-enable xdebug
+		apk del $apkDel
+
+		cp /usr/local/etc/php/conf.d/available/xdebug.ini /usr/local/etc/php/conf.d/zzz_xdebug.ini
+		;;
+
+	config)
+		cp /usr/local/etc/php/conf.d/available/dev.ini /usr/local/etc/php/conf.d/zzz_dev.ini
+		;;
+
+	*)
+		usage
+		exit 1
+		;;
+esac
