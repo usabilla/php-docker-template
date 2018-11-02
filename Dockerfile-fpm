@@ -24,7 +24,7 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
 # Patch CVE-2018-14618
 RUN apk upgrade --no-cache curl
 
-COPY src/php/conf/default.ini /usr/local/etc/php/conf.d/
+COPY src/php/conf/ /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
 # Install shush
@@ -48,17 +48,9 @@ VOLUME [ "/var/run" ]
 ## FPM-DEV STAGE ##
 FROM fpm as fpm-dev
 
-# Enable XDebug
-RUN set -x \
-    && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
-    && pecl clear-cache \
-    && docker-php-source-tarball clean \
-    && apk del .phpize-deps 
-
-COPY src/php/conf/xdebug.ini /usr/local/etc/php/conf.d/zzz_xdebug.ini
-COPY src/php/conf/dev.ini /usr/local/etc/php/conf.d/zzz_dev.ini
+# Install Xdebug and development specific configuration
+RUN docker-php-dev-mode xdebug \
+    && docker-php-dev-mode config
 
 # Change entrypoint back to the default because we don't need shush in development
 CMD ["docker-php-entrypoint", "--force-stderr"]
