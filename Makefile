@@ -56,58 +56,44 @@ lint:
 lint-shell:
 	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build*
 
+DOCKER_TEST_RUN=docker run --rm -t \
+	--network php-docker-template-tests_backend-php \
+	-v "${current_dir}/test:/tests" \
+	-v /var/run/docker.sock:/var/run/docker.sock:ro \
+	renatomefi/docker-testinfra:1 --verbose
+
 test:
 	docker-compose -p php-docker-template-tests up --force-recreate --build -d \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm or php_no_dev and not php_dev" \
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_1' \
+		-m "php or php_fpm or php_no_dev and not php_dev" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_dev_1' -m "php or php_dev" \
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_dev_1' \
+		-m "php or php_dev" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli or php_no_dev and not php_dev" \
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_1' \
+		-m "php or php_cli or php_no_dev and not php_dev" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_dev_1' -m "php or php_cli or php_dev" \
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_dev_1' \
+		-m "php or php_cli or php_dev" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx	 \
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
+		-m "nginx" \
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker-compose -p php-docker-template-tests down
 
 ci-test:
 	docker-compose -p php-docker-template-tests up --force-recreate -d
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_fpm_1' -m "php or php_fpm" --junitxml=/tests/test-results/php-fpm.xml
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_php_cli_1' -m "php or php_cli" --junitxml=/tests/test-results/php-cli.xml
-	docker run --rm -t \
-		--network php-docker-template-tests_backend-php \
-		-v "${current_dir}/test:/tests" \
-		-v /var/run/docker.sock:/var/run/docker.sock:ro \
-		renatomefi/docker-testinfra:1 --verbose --hosts='docker://php-docker-template-tests_nginx_1' -m nginx --junitxml=/tests/test-results/nginx.xml
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_1' \
+		-m "php or php_fpm or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-fpm.xml
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_dev_1' \
+		-m "php or php_dev" --junitxml=/tests/test-results/php-fpm.xml
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_1' \
+		-m "php or php_cli or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-cli.xml
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_dev_1' \
+		-m "php or php_cli or php_dev" --junitxml=/tests/test-results/php-cli.xml
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
+		-m nginx --junitxml=/tests/test-results/nginx.xml
 
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d
