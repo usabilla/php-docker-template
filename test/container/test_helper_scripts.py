@@ -8,6 +8,7 @@ def test_php_images_contain_helper_scripts(host):
         "/usr/local/bin/docker-php-ext-install",
         "/usr/local/bin/docker-php-ext-enable",
         "/usr/local/bin/docker-php-ext-configure",
+        "/usr/local/bin/docker-php-ext-rdkafka",
         "/usr/local/bin/docker-php-entrypoint",
         "/usr/local/bin/php-fpm-healthcheck",
     ]
@@ -45,3 +46,9 @@ def test_php_fpm_status_is_enabled(host):
     health_check = host.run("php-fpm-healthcheck -v")
     assert health_check.rc == 0
     assert "pool:" in health_check.stdout
+
+@pytest.mark.php
+def test_php_source_tarball_script(host):
+    host.run_expect([0], "docker-php-ext-rdkafka")
+
+    assert 'rdkafka' in host.run('php -m').stdout

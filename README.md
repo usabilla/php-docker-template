@@ -286,3 +286,7 @@ RUN set -x \
     && docker-php-ext-enable mongodb \
     && apk del .build-deps
 ```
+
+#### RD Kafka
+
+Since the RD Kafka extension is used across multiple projects, a helper script is provided to install both the dependencies and the extension in a uniform fashion. Run `docker-php-ext-rdkafka` to profit. 

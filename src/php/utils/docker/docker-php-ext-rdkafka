@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -xe
+
+# shellcheck disable=SC2086
+apk add --no-cache --virtual .build-deps $PHPIZE_DEPS
+apk add --no-cache librdkafka-dev
+
+pecl install rdkafka
+
+docker-php-ext-enable rdkafka
+
+apk del .build-deps
