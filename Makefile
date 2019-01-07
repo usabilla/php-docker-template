@@ -3,6 +3,7 @@ push: build push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
 ci-push-http: ci-docker-login push-http
+ci-test: ci-test-cli ci-test-fpm
 qa: lint lint-shell build test scan-vulnerability
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
@@ -82,18 +83,21 @@ test:
 		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
 	docker-compose -p php-docker-template-tests down
 
-ci-test:
+ci-test-fpm:
 	docker-compose -p php-docker-template-tests up --force-recreate -d
 	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_1' \
 		-m "php or php_fpm or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-fpm.xml
 	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_dev_1' \
 		-m "php or php_dev" --junitxml=/tests/test-results/php-fpm.xml
+	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
+		-m nginx --junitxml=/tests/test-results/nginx.xml
+
+ci-test-cli:
+	docker-compose -p php-docker-template-tests up --force-recreate -d
 	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_1' \
 		-m "php or php_cli or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-cli.xml
 	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_dev_1' \
 		-m "php or php_cli or php_dev" --junitxml=/tests/test-results/php-cli.xml
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
-		-m nginx --junitxml=/tests/test-results/nginx.xml
 
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d
