@@ -287,6 +287,8 @@ RUN set -x \
     && apk del .build-deps
 ```
 
-#### RD Kafka
+#### Common extension helper scripts
 
-Since the RD Kafka extension is used across multiple projects, a helper script is provided to install both the dependencies and the extension in a uniform fashion. Run `docker-php-ext-rdkafka` to profit. 
+Some extensions are used across multiple projects but can have some complexities while installing so we ship helper scripts with the PHP images to install dependencies and enable the extension. The following helper scripts can be run inside projects' Dockerfile:
+- `docker-php-ext-rdkafka` for RD Kafka 
+- `docker-php-ext-pdo-pgsql` for PDO Postgres

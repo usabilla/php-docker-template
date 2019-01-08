@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -xe
+
+# shellcheck disable=SC2086
+apk add --no-cache --virtual .build-deps $PHPIZE_DEPS postgresql-dev
+apk add --no-cache postgresql-client
+
+docker-php-source-tarball download
+docker-php-ext-install pdo_pgsql
+docker-php-source-tarball delete
+
+apk del .build-deps
