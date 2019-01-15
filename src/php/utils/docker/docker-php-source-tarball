@@ -33,7 +33,9 @@ case "$1" in
 		GNUPGHOME="$(mktemp -d)";
 		export GNUPGHOME;
 		for key in $GPG_KEYS; do
-			gpg --keyserver ha.pool.sks-keyservers.net --recv-keys "$key";
+			( gpg --keyserver ipv4.pool.sks-keyservers.net --recv-keys "$key" \
+			|| gpg --keyserver pgp.mit.edu --recv-keys "$key" \
+			|| gpg --keyserver keyserver.pgp.com --recv-keys "$key" )
 		done;
 		gpg --batch --verify php.tar.xz.asc php.tar.xz;
 		command -v gpgconf > /dev/null && gpgconf --kill all;
