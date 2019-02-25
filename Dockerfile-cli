@@ -20,6 +20,9 @@ RUN set -x \
     && docker-php-source-tarball clean && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
 
+# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2)
+RUN apk upgrade --no-cache curl libxml2
+
 COPY src/gpg /usr/local/etc/gpg
 COPY src/php/conf/ /usr/local/etc/php/conf.d/
 COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
