@@ -18,13 +18,17 @@ build-cli: BUILDINGIMAGE=cli
 build-cli: clean-tags
 	./build-php.sh cli 7.2 3.7
 	./build-php.sh cli 7.2 3.8
+	./build-php.sh cli 7.2 3.9
 	./build-php.sh cli 7.3 3.8
+	./build-php.sh cli 7.3 3.9
 
 build-fpm: BUILDINGIMAGE=fpm
 build-fpm: clean-tags
 	./build-php.sh fpm 7.2 3.7
 	./build-php.sh fpm 7.2 3.8
+	./build-php.sh fpm 7.2 3.9
 	./build-php.sh fpm 7.3 3.8
+	./build-php.sh fpm 7.3 3.9
 
 # Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
