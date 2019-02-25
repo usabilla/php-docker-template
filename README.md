@@ -2,6 +2,18 @@
 
 A series of Docker images to run PHP Applications on Usabilla Style
 
+- [Using and extending](#using-and-extending)
+  - [Nginx](#for-nginx-customization)
+  - [PHP](#for-php-customization)
+- [Architecture Decisions Records](#architecture-decisions-records)
+- [Basic architecture](#basic-architecture)
+- [The base images](#the-base-images)
+- [Alpine Linux situation](#alpine-linux-situation)
+- [The available tags](#the-available-tags)
+- [Adding more supported versions](#adding-more-supported-versions)
+- [Contributing](.github/CONTRIBUTING.md)
+- [License](LICENSE.md)
+
 ## Architecture Decisions Records
 
 This project adheres to ADRs, a [list can be found here](docs/adr/).
