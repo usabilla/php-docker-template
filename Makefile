@@ -116,4 +116,4 @@ ci-scan-vulnerability:
 	mkdir -p ./tmp/clair/usabillabv
 	cat ./tmp/build-*.tags | xargs -I % sh -c 'clair-scanner --ip 172.17.0.1 -r "./tmp/clair/%.json" -l ./tmp/clair/clair.log %'; \
 	XARGS_EXIT=$$?; \
-	if [ $${XARGS_EXIT} -eq 123 ]; then curl -X POST --data-urlencode "payload={\"channel\": \"#chapter-backend\", \"username\": \"clair\", \"text\": \"<!here> Clair vulnerability found on Usabilla PHP Docker images! <https://circleci.com/gh/usabilla/php-docker-template/${CIRCLE_BUILD_NUM}#artifacts/containers/0|Check the build for details>\", \"icon_emoji\": \":face_with_head_bandage:\"}" ${SLACK_NOTIFICATION_URL}; else exit $${XARGS_EXIT}; fi
+	if [ $${XARGS_EXIT} -eq 123 ]; then find ./tmp/clair/usabillabv -type f | sed 's/^/-Fjson=@/' | xargs -d'\n' curl -X POST ${WALLE_REPORT_URL} -F channel=team_oz -F buildUrl=https://circleci.com/gh/usabilla/php-docker-template/${CIRCLE_BUILD_NUM}#artifacts/containers/0; else exit $${XARGS_EXIT}; fi	
