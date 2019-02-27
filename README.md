@@ -1,5 +1,7 @@
 # PHP Docker images template
 
+[![CircleCI](https://circleci.com/gh/usabilla/php-docker-template.svg?style=svg)](https://circleci.com/gh/usabilla/php-docker-template)
+
 A series of Docker images to run PHP Applications on Usabilla Style
 
 - [Using and extending](#using-and-extending)
