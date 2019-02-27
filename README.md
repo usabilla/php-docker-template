@@ -282,7 +282,7 @@ Some extensions are not provided with the PHP source, but are instead available 
 To install a PECL extension, use `pecl install` to download and compile it, then use `docker-php-ext-enable` to enable it:
 
 ```Dockerfile
-# Installs XDebug (temporarily adding the necessary libraries):
+# Installs Xdebug (temporarily adding the necessary libraries):
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && pecl install xdebug \
