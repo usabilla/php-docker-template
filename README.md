@@ -1,6 +1,8 @@
 # PHP Docker images template
 
 [![CircleCI](https://circleci.com/gh/usabilla/php-docker-template.svg?style=svg)](https://circleci.com/gh/usabilla/php-docker-template)
+[![Docker hub](https://badgen.net/badge//Docker%20Hub?icon=docker)](https://hub.docker.com/r/usabillabv/php/)
+[![Usabilla Feedback Button](.github/static/img/badge-usabilla-leave-us-feedback.png)](https://d6tizftlrpuof.cloudfront.net/live/i/4f03f8e795fb10233e000000/50db3123f698e9156665fa0fb1a914932de5a334.html?reset&project=php-docker-template&source=github)
 
 A series of Docker images to run PHP Applications on Usabilla Style
 
