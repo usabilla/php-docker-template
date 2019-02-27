@@ -7,6 +7,7 @@ A series of Docker images to run PHP Applications on Usabilla Style
 - [Using and extending](#using-and-extending)
   - [Nginx](#for-nginx-customization)
   - [PHP](#for-php-customization)
+    - [Healthcheck](#php-fpm-healthcheck)
 - [Architecture Decisions Records](#architecture-decisions-records)
 - [Basic architecture](#basic-architecture)
 - [The base images](#the-base-images)
@@ -137,9 +138,32 @@ Removing a version from the build won't make it be removed from Docker registry,
 
 ## Using and extending
 
+### PHP FPM healthcheck
+
+This image ships with the [php-fpm-healthcheck](https://github.com/renatomefi/php-fpm-healthcheck) which allows you to healthcheck FPM apart from the Nginx setup, providing more compatibility with [the single process Docker container](https://cloud.google.com/solutions/best-practices-for-building-containers#package_a_single_app_per_container).
+
+This healthcheck provides diverse metrics to be watch and can be configured according to your needs.
+More information on how to use it can be found in the [official documentation](https://github.com/renatomefi/php-fpm-healthcheck#a-php-fpm-health-check-script).
+
+The healthcheck can be found in the container `$PATH` as an executable:
+
+```console
+$ php-fpm-healthcheck
+$ echo $?
+0
+```
+
+## Basic usage
+
 Simply use the images as base of the application's `Dockerfile` and apply the necessary changes.
 
-In usual cases it might not be necessary to extend the nginx images, unless you desired extend it's behavior by for instance serving static files.
+```Dockerfile
+# syntax=docker/dockerfile:1.0.0-experimental
+
+FROM usabillabv/php:7.3-fpm-alpine3.9
+```
+
+In usual cases it might not be necessary to extend the nginx images, unless you desire to extend its behavior by for instance serving static files.
 
 [Nginx customization](#for-nginx-customization)
 
