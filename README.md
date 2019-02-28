@@ -305,24 +305,33 @@ RUN set -x \
 
 #### PECL extensions
 
-Some extensions are not provided with the PHP source, but are instead available through [PECL](https://pecl.php.net/).
+Some extensions are not provided with the PHP source, but are instead available through [PECL](https://pecl.php.net/), see a full list of them [here](https://pecl.php.net/packages.php).
 
 To install a PECL extension, use `pecl install` to download and compile it, then use `docker-php-ext-enable` to enable it:
 
 ```Dockerfile
-# Installs Xdebug (temporarily adding the necessary libraries):
+# Installs ast extension (temporarily adding the necessary libraries):
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
+    && pecl install ast \
+    && docker-php-ext-enable ast \
     && apk del .phpize-deps
+```
+
+Check if the extension is loaded after building it:
+
+```console
+$ docker build .
+Successfully built 5bcf0f7d49b0
+$ docker run --rm 5bcf0f7d49b0 php -m | grep ast
+ast
 ```
 
 ```Dockerfile
 # Installs MongoDB Driver (temporarily adding the necessary libraries):
 RUN set -x \
     && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS openssl-dev  \
-    && pecl install mongodb-1.5.2 \
+    && pecl install mongodb-1.5.3 \
     && docker-php-ext-enable mongodb \
     && apk del .build-deps
 ```
@@ -330,5 +339,34 @@ RUN set -x \
 #### Common extension helper scripts
 
 Some extensions are used across multiple projects but can have some complexities while installing so we ship helper scripts with the PHP images to install dependencies and enable the extension. The following helper scripts can be run inside projects' Dockerfile:
-- `docker-php-ext-rdkafka` for RD Kafka 
+
+- `docker-php-ext-rdkafka` for RD Kafka
 - `docker-php-ext-pdo-pgsql` for PDO Postgres
+
+#### Xdebug
+
+Since [Xdebug](https://xdebug.org) is a common extension to be used we offer two options:
+
+##### Dev image
+
+Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.9-dev`
+
+Not recommended if you're layering with your production images, using a different base image doesn't allow to you share cache among your Dockerfile targets.
+
+We ship the image with a dev mode helper, which can install Xdebug and configure it.
+
+##### Helper script
+
+Installing and enabling the extensions
+
+```console
+$ docker-php-dev-mode xdebug
+```
+
+We also provide some default configuration to make it easier to start your debugging session, you can enable it also via the helper script.
+
+The contents of the configuration can be found [here](src/php/conf/available/xdebug.ini)
+
+```console
+$ docker-php-dev-mode config
+```
