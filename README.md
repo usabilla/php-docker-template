@@ -19,6 +19,7 @@ A series of Docker images to run PHP Applications on Usabilla Style
 - [The available tags](#the-available-tags)
 - [Adding more supported versions](#adding-more-supported-versions)
 - [Dockerfile example with Buildkit](#dockerfile-example)
+- [PHP FPM functional example](docs/examples/hello-world-fpm)
 - [Contributing](.github/CONTRIBUTING.md)
 - [License](LICENSE.md)
 
@@ -461,3 +462,7 @@ $ DOCKER_BUILDKIT=1 docker build -t "my-project-prod:latest" \
   --target=prod \
   --secret id=composer.auth,src=.composer-auth.json
 ```
+
+### Working example
+
+We also have a simple, but fully functional PHP FPM example, [check it here](docs/examples/hello-world-fpm).

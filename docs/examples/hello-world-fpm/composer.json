@@ -1,0 +1,15 @@
+{
+    "name": "usabilla/docker-hello-world-fpm",
+    "description": "A simple Hello World for Usabilla PHP Docker images",
+    "type": "project",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Renato Mefi",
+            "email": "gh@mefi.in"
+        }
+    ],
+    "require": {
+        "php": "^7.3"
+    }
+}
