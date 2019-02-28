@@ -16,6 +16,7 @@ A series of Docker images to run PHP Applications on Usabilla Style
 - [Alpine Linux situation](#alpine-linux-situation)
 - [The available tags](#the-available-tags)
 - [Adding more supported versions](#adding-more-supported-versions)
+- [Dockerfile example with Buildkit](#dockerfile-example)
 - [Contributing](.github/CONTRIBUTING.md)
 - [License](LICENSE.md)
 
@@ -369,4 +370,92 @@ The contents of the configuration can be found [here](src/php/conf/available/xde
 
 ```console
 $ docker-php-dev-mode config
+```
+
+## Dockerfile example
+
+The Dockerfile in the example below is meant to centralize the production and development images in a single Dockerfile, sharing cached layers among the build steps, cleaning unnecessary files like tests, docs and readme files from the final result via git archive.
+
+Composer auth is done via a secret mount to avoid layering credentials and keeping the layers leans.
+
+We also run the image with the `app` user since doing it as `root` is considered a bad practice.
+
+To be able to build this image you need [Docker buildkit](https://github.com/moby/buildkit) enabled, this is what empowers the `RUN` mounts and more, check its documentation [here](https://docs.docker.com/develop/develop-images/build_enhancements/).
+
+```Dockerfile
+# syntax=docker/dockerfile:1.0.0-experimental
+
+# The base target will serve as initial layer for dev and prod images,
+# thus all necessary global configurations, extensions and modules
+# should be put here
+FROM usabillabv/php:7.3-fpm-alpine3.9 AS base
+
+# When composer gets copied we want to make sure it's from the major version 1
+FROM composer:1 as composer
+
+# The source target is responsible to prepare the source code by cleaning it and
+# installing the necessary dependencies, it's later copied into the production
+# target, which then leaves no traces of the build process behind whilst making
+# the image lean
+FROM base as source
+
+ENV COMPOSER_HOME=/opt/.composer
+
+RUN apk add --no-cache git
+
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+WORKDIR /opt/archived
+
+# Mount the current directory at `/opt/project` and run git archive
+# hadolint ignore=SC2215
+RUN --mount=type=bind,source=./,rw \
+    mkdir -p /opt/project \
+    && git archive --verbose --format tar HEAD | tar -x -C /opt/project
+
+WORKDIR /opt/project
+
+# Mount composer.auth to the project root and composer cache if available
+# then install the dependencies
+# hadolint ignore=SC2215
+RUN --mount=type=secret,id=composer.auth,target=/opt/project/auth.json \
+    --mount=type=bind,source=.composer/cache,target=/opt/.composer/cache \
+    composer install --no-interaction --no-progress --no-dev --prefer-dist --classmap-authoritative
+
+# Copy the source from its target and prepare permissions
+FROM base as prod
+
+WORKDIR /opt/project
+
+COPY --chown=app:app --from=source /opt/project /opt/project
+
+# Install Xdebug and enable development specific configuration
+# also create a volume for the project which will later be mount via run
+FROM base AS dev
+
+COPY --chown=app:app --from=composer /usr/bin/composer /usr/bin/composer
+
+RUN docker-php-dev-mode xdebug \
+    && docker-php-dev-mode config
+
+VOLUME [ "/opt/project" ]
+
+```
+
+### Building this image as dev
+
+```console
+$ DOCKER_BUILDKIT=1 docker build -t "my-project-dev:latest" \
+  --target=dev .
+```
+
+### Building this image as prod
+
+You want to run this in your CI/CD environment, you can create the `composer.auth` file there, for this example let's get your computer's file and mount the secret.
+
+```console
+$ cp ~/.config/composer/auth.json .composer-auth.json
+$ DOCKER_BUILDKIT=1 docker build -t "my-project-prod:latest" \
+  --target=prod \
+  --secret id=composer.auth,src=.composer-auth.json
 ```
