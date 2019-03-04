@@ -2,6 +2,8 @@
 
 [![CircleCI](https://circleci.com/gh/usabilla/php-docker-template.svg?style=svg)](https://circleci.com/gh/usabilla/php-docker-template)
 [![Docker hub](https://badgen.net/badge//Docker%20Hub?icon=docker)](https://hub.docker.com/r/usabillabv/php/)
+[![Docker hub](https://img.shields.io/docker/pulls/usabillabv/php.svg)](https://hub.docker.com/r/usabillabv/php/)
+[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.9.svg)](https://hub.docker.com/r/usabillabv/php/)
 [![Usabilla Feedback Button](.github/static/img/badge-usabilla-leave-us-feedback.png)](https://d6tizftlrpuof.cloudfront.net/live/i/4f03f8e795fb10233e000000/50db3123f698e9156665fa0fb1a914932de5a334.html?reset&project=php-docker-template&source=github)
 
 A series of Docker images to run PHP Applications on Usabilla Style
@@ -16,6 +18,8 @@ A series of Docker images to run PHP Applications on Usabilla Style
 - [Alpine Linux situation](#alpine-linux-situation)
 - [The available tags](#the-available-tags)
 - [Adding more supported versions](#adding-more-supported-versions)
+- [Dockerfile example with Buildkit](#dockerfile-example)
+- [PHP FPM functional example](docs/examples/hello-world-fpm)
 - [Contributing](.github/CONTRIBUTING.md)
 - [License](LICENSE.md)
 
@@ -305,24 +309,33 @@ RUN set -x \
 
 #### PECL extensions
 
-Some extensions are not provided with the PHP source, but are instead available through [PECL](https://pecl.php.net/).
+Some extensions are not provided with the PHP source, but are instead available through [PECL](https://pecl.php.net/), see a full list of them [here](https://pecl.php.net/packages.php).
 
 To install a PECL extension, use `pecl install` to download and compile it, then use `docker-php-ext-enable` to enable it:
 
 ```Dockerfile
-# Installs Xdebug (temporarily adding the necessary libraries):
+# Installs ast extension (temporarily adding the necessary libraries):
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && pecl install xdebug \
-    && docker-php-ext-enable xdebug \
+    && pecl install ast \
+    && docker-php-ext-enable ast \
     && apk del .phpize-deps
+```
+
+Check if the extension is loaded after building it:
+
+```console
+$ docker build .
+Successfully built 5bcf0f7d49b0
+$ docker run --rm 5bcf0f7d49b0 php -m | grep ast
+ast
 ```
 
 ```Dockerfile
 # Installs MongoDB Driver (temporarily adding the necessary libraries):
 RUN set -x \
     && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS openssl-dev  \
-    && pecl install mongodb-1.5.2 \
+    && pecl install mongodb-1.5.3 \
     && docker-php-ext-enable mongodb \
     && apk del .build-deps
 ```
@@ -330,5 +343,126 @@ RUN set -x \
 #### Common extension helper scripts
 
 Some extensions are used across multiple projects but can have some complexities while installing so we ship helper scripts with the PHP images to install dependencies and enable the extension. The following helper scripts can be run inside projects' Dockerfile:
-- `docker-php-ext-rdkafka` for RD Kafka 
+
+- `docker-php-ext-rdkafka` for RD Kafka
 - `docker-php-ext-pdo-pgsql` for PDO Postgres
+
+#### Xdebug
+
+Since [Xdebug](https://xdebug.org) is a common extension to be used we offer two options:
+
+##### Dev image
+
+Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.9-dev`
+
+Not recommended if you're layering with your production images, using a different base image doesn't allow to you share cache among your Dockerfile targets.
+
+We ship the image with a dev mode helper, which can install Xdebug and configure it.
+
+##### Helper script
+
+Installing and enabling the extensions
+
+```console
+$ docker-php-dev-mode xdebug
+```
+
+We also provide some default configuration to make it easier to start your debugging session, you can enable it also via the helper script.
+
+The contents of the configuration can be found [here](src/php/conf/available/xdebug.ini)
+
+```console
+$ docker-php-dev-mode config
+```
+
+## Dockerfile example
+
+The Dockerfile in the example below is meant to centralize the production and development images in a single Dockerfile, sharing cached layers among the build steps, cleaning unnecessary files like tests, docs and readme files from the final result via git archive.
+
+Composer auth is done via a secret mount to avoid layering credentials and keeping the layers leans.
+
+We also run the image with the `app` user since doing it as `root` is considered a bad practice.
+
+To be able to build this image you need [Docker buildkit](https://github.com/moby/buildkit) enabled, this is what empowers the `RUN` mounts and more, check its documentation [here](https://docs.docker.com/develop/develop-images/build_enhancements/).
+
+```Dockerfile
+# syntax=docker/dockerfile:1.0.0-experimental
+
+# The base target will serve as initial layer for dev and prod images,
+# thus all necessary global configurations, extensions and modules
+# should be put here
+FROM usabillabv/php:7.3-fpm-alpine3.9 AS base
+
+# When composer gets copied we want to make sure it's from the major version 1
+FROM composer:1 as composer
+
+# The source target is responsible to prepare the source code by cleaning it and
+# installing the necessary dependencies, it's later copied into the production
+# target, which then leaves no traces of the build process behind whilst making
+# the image lean
+FROM base as source
+
+ENV COMPOSER_HOME=/opt/.composer
+
+RUN apk add --no-cache git
+
+COPY --from=composer /usr/bin/composer /usr/bin/composer
+
+WORKDIR /opt/archived
+
+# Mount the current directory at `/opt/project` and run git archive
+# hadolint ignore=SC2215
+RUN --mount=type=bind,source=./,rw \
+    mkdir -p /opt/project \
+    && git archive --verbose --format tar HEAD | tar -x -C /opt/project
+
+WORKDIR /opt/project
+
+# Mount composer.auth to the project root and composer cache if available
+# then install the dependencies
+# hadolint ignore=SC2215
+RUN --mount=type=secret,id=composer.auth,target=/opt/project/auth.json \
+    --mount=type=bind,source=.composer/cache,target=/opt/.composer/cache \
+    composer install --no-interaction --no-progress --no-dev --prefer-dist --classmap-authoritative
+
+# Copy the source from its target and prepare permissions
+FROM base as prod
+
+WORKDIR /opt/project
+
+COPY --chown=app:app --from=source /opt/project /opt/project
+
+# Install Xdebug and enable development specific configuration
+# also create a volume for the project which will later be mount via run
+FROM base AS dev
+
+COPY --chown=app:app --from=composer /usr/bin/composer /usr/bin/composer
+
+RUN docker-php-dev-mode xdebug \
+    && docker-php-dev-mode config
+
+VOLUME [ "/opt/project" ]
+
+```
+
+### Building this image as dev
+
+```console
+$ DOCKER_BUILDKIT=1 docker build -t "my-project-dev:latest" \
+  --target=dev .
+```
+
+### Building this image as prod
+
+You want to run this in your CI/CD environment, you can create the `composer.auth` file there, for this example let's get your computer's file and mount the secret.
+
+```console
+$ cp ~/.config/composer/auth.json .composer-auth.json
+$ DOCKER_BUILDKIT=1 docker build -t "my-project-prod:latest" \
+  --target=prod \
+  --secret id=composer.auth,src=.composer-auth.json
+```
+
+### Working example
+
+We also have a simple, but fully functional PHP FPM example, [check it here](docs/examples/hello-world-fpm).
