@@ -65,7 +65,7 @@ DOCKER_TEST_RUN=docker run --rm -t \
 	--network php-docker-template-tests_backend-php \
 	-v "${current_dir}/test:/tests" \
 	-v /var/run/docker.sock:/var/run/docker.sock:ro \
-	renatomefi/docker-testinfra:1 --verbose
+	renatomefi/docker-testinfra:2 --verbose
 
 test:
 	docker-compose -p php-docker-template-tests up --force-recreate --build -d \
