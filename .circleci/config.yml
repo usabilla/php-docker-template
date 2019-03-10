@@ -30,7 +30,9 @@ default_workflow_jobs: &default_workflow_jobs
         - build-http
         - build-fpm
         - build-cli
-  - push-http:
+
+push_workflow_jobs: &push_workflow_jobs
+  - push-http: &push-http
       context: dockerhub
       filters:
         branches:
@@ -40,7 +42,7 @@ default_workflow_jobs: &default_workflow_jobs
         - test-cli
         - test-fpm
         - scan-vulnerability
-  - push-fpm:
+  - push-fpm: &push-fpm
       context: dockerhub
       filters:
         branches:
@@ -50,8 +52,7 @@ default_workflow_jobs: &default_workflow_jobs
         - test-cli
         - test-fpm
         - scan-vulnerability
-        
-  - push-cli:
+  - push-cli: &push-cli
       context: dockerhub
       filters:
         branches:
@@ -62,12 +63,27 @@ default_workflow_jobs: &default_workflow_jobs
         - test-fpm
         - scan-vulnerability
 
+push_workflow_jobs_approval: &push_workflow_jobs_approval
+  - push-http:
+    <<: *push-http
+    type: approval
+  - push-fpm:
+    <<: *push-fpm
+    type: approval
+  - push-cli:
+    <<: *push-http
+    type: approval
+
 workflows:
   version: 2
   lint-build-test-push:
-    jobs: *default_workflow_jobs
+    jobs: 
+      <<: *default_workflow_jobs
+      <<: *push_workflow_jobs
   nightly:
-    jobs: *default_workflow_jobs
+    jobs: 
+      <<: *default_workflow_jobs
+      <<: *default_workflow_jobs
     triggers:
       - schedule:
           cron: "0 3 */2 * *"
