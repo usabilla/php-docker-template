@@ -20,6 +20,11 @@ default_workflow_jobs: &default_workflow_jobs
         - build-http
         - build-fpm
         - build-cli
+  - test-http:
+      requires:
+        - build-http
+        - build-fpm
+        - build-cli
   - test-cli:
       requires:
         - build-http
@@ -39,6 +44,7 @@ default_workflow_jobs: &default_workflow_jobs
       requires:
         - test-cli
         - test-fpm
+        - test-http
         - scan-vulnerability
   - push-fpm:
       context: dockerhub
@@ -49,8 +55,8 @@ default_workflow_jobs: &default_workflow_jobs
       requires:
         - test-cli
         - test-fpm
+        - test-http
         - scan-vulnerability
-        
   - push-cli:
       context: dockerhub
       filters:
@@ -60,6 +66,7 @@ default_workflow_jobs: &default_workflow_jobs
       requires:
         - test-cli
         - test-fpm
+        - test-http
         - scan-vulnerability
 
 workflows:
@@ -105,6 +112,18 @@ jobs:
           at: ./tmp
       - run: docker load -i ./tmp/usabillabv_php-fpm.tar
       - run: make test-fpm
+      - store_test_results:
+          path: ./tmp/test-results
+  test-http:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - run: sudo chown -R 1000:1000 ./test/functional/web/tmp/ # Ensure we have the same uid:gid as our `app` docker user
+      - run: make test-http
       - store_test_results:
           path: ./tmp/test-results
   scan-vulnerability:

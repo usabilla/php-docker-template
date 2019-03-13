@@ -37,5 +37,5 @@ docker run --rm -t \
     -v "$(pwd)/tmp/test-results:/results" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
     renatomefi/docker-testinfra:2 \
-    -m "$TEST_SUITE" --junitxml="/results/http-$DOCKER_FPM_TAG.xml" \
+    -m "$TEST_SUITE" --junitxml="/results/http-$DOCKER_NGINX_TAG.xml" \
     --verbose --hosts="docker://$DOCKER_NGINX_CONTAINER"
