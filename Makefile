@@ -59,7 +59,10 @@ lint:
 	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http
 
 lint-shell:
-	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build*
+	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build* test-*
+
+test-cli: ./tmp/build-cli.tags
+	xargs -I % ./test-cli.sh % < ./tmp/build-cli.tags
 
 DOCKER_TEST_RUN=docker run --rm -t \
 	--network php-docker-template-tests_backend-php \
@@ -95,13 +98,6 @@ ci-test-fpm:
 		-m "php or php_dev" --junitxml=/tests/test-results/php-fpm.xml
 	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
 		-m nginx --junitxml=/tests/test-results/nginx.xml
-
-ci-test-cli:
-	docker-compose -p php-docker-template-tests up --force-recreate -d
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_1' \
-		-m "php or php_cli or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-cli.xml
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_dev_1' \
-		-m "php or php_cli or php_dev" --junitxml=/tests/test-results/php-cli.xml
 
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d
