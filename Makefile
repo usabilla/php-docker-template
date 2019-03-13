@@ -33,7 +33,7 @@ build-fpm: clean-tags
 # Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
 build-http: clean-tags
-	./build-nginx.sh 1.15 nginx # nginx v1.5 is currently carrying the `nginx` tag but so far we only tested 1.14
+	./build-nginx.sh 1.15 nginx
 	./build-nginx.sh 1.14
 
 .NOTPARALLEL: clean-tags
@@ -63,6 +63,15 @@ lint-shell:
 
 test-cli: ./tmp/build-cli.tags
 	xargs -I % ./test-cli.sh % < ./tmp/build-cli.tags
+
+test-fpm: ./tmp/build-fpm.tags
+	xargs -I % ./test-fpm.sh % < ./tmp/build-fpm.tags
+
+# Test nginx with the newst and oldest fpm tags
+# if it was a full matrix it'd be too many tests
+test-http: ./tmp/build-http.tags ./tmp/build-fpm.tags
+	xargs -I % ./test-http.sh $$(head -1 ./tmp/build-fpm.tags) % < ./tmp/build-http.tags
+	xargs -I % ./test-http.sh $$(tail -1 ./tmp/build-fpm.tags) % < ./tmp/build-http.tags
 
 DOCKER_TEST_RUN=docker run --rm -t \
 	--network php-docker-template-tests_backend-php \
