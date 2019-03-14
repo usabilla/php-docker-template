@@ -1,10 +1,9 @@
+qa: lint lint-shell build test scan-vulnerability
 build: clean-tags build-cli build-fpm build-http
 push: build push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
 ci-push-http: ci-docker-login push-http
-ci-test: ci-test-cli ci-test-fpm
-qa: lint lint-shell build test scan-vulnerability
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(abspath $(patsubst %/,%,$(dir $(mkfile_path))))
@@ -33,7 +32,7 @@ build-fpm: clean-tags
 # Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
 build-http: clean-tags
-	./build-nginx.sh 1.15 nginx # nginx v1.5 is currently carrying the `nginx` tag but so far we only tested 1.14
+	./build-nginx.sh 1.15 nginx
 	./build-nginx.sh 1.14
 
 .NOTPARALLEL: clean-tags
@@ -59,50 +58,22 @@ lint:
 	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http
 
 lint-shell:
-	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build*
+	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build* test-*
 
-DOCKER_TEST_RUN=docker run --rm -t \
-	--network php-docker-template-tests_backend-php \
-	-v "${current_dir}/test:/tests" \
-	-v /var/run/docker.sock:/var/run/docker.sock:ro \
-	renatomefi/docker-testinfra:2 --verbose
+test: test-cli test-fpm test-http
 
-test:
-	docker-compose -p php-docker-template-tests up --force-recreate --build -d \
-		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_1' \
-		-m "php or php_fpm or php_no_dev and not php_dev" \
-		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_dev_1' \
-		-m "php or php_dev" \
-		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_1' \
-		-m "php or php_cli or php_no_dev and not php_dev" \
-		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_dev_1' \
-		-m "php or php_cli or php_dev" \
-		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
-		-m "nginx" \
-		|| (docker-compose -p php-docker-template-tests down; echo "tests failed" && exit 1)
-	docker-compose -p php-docker-template-tests down
+test-cli: ./tmp/build-cli.tags
+	xargs -I % ./test-cli.sh % < ./tmp/build-cli.tags
 
-ci-test-fpm:
-	docker-compose -p php-docker-template-tests up --force-recreate -d
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_1' \
-		-m "php or php_fpm or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-fpm.xml
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_fpm_dev_1' \
-		-m "php or php_dev" --junitxml=/tests/test-results/php-fpm.xml
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_nginx_1' \
-		-m nginx --junitxml=/tests/test-results/nginx.xml
+test-fpm: ./tmp/build-fpm.tags
+	xargs -I % ./test-fpm.sh % < ./tmp/build-fpm.tags
 
-ci-test-cli:
-	docker-compose -p php-docker-template-tests up --force-recreate -d
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_1' \
-		-m "php or php_cli or php_no_dev and not php_dev" --junitxml=/tests/test-results/php-cli.xml
-	$(DOCKER_TEST_RUN) --hosts='docker://php-docker-template-tests_php_cli_dev_1' \
-		-m "php or php_cli or php_dev" --junitxml=/tests/test-results/php-cli.xml
-
+# Test nginx with the newst and oldest fpm tags
+# if it was a full matrix it'd be too many tests
+test-http: ./tmp/build-http.tags ./tmp/build-fpm.tags
+	xargs -I % ./test-http.sh $$(head -1 ./tmp/build-fpm.tags) % < ./tmp/build-http.tags
+	xargs -I % ./test-http.sh $$(tail -1 ./tmp/build-fpm.tags) % < ./tmp/build-http.tags
+	
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d
 	RETRIES=0 && while ! wget -T 10 -q -O /dev/null http://localhost:6060/v1/namespaces ; do sleep 1 ; echo -n "." ; if [ $${RETRIES} -eq 10 ] ; then echo " Timeout, aborting." ; exit 1 ; fi ; RETRIES=$$(($${RETRIES}+1)) ; done
