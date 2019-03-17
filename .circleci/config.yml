@@ -1,41 +1,41 @@
 version: 2.1
 
-default_workflow_jobs: &default_workflow_jobs
+.scheduled_workflow_jobs: &scheduled_workflow_jobs
   - lint
   - lint-shell
-  - build-http:
+  - build-http: &build-http
       requires:
         - lint
         - lint-shell
-  - build-fpm:
+  - build-fpm: &build-fpm
       requires:
         - lint
         - lint-shell
-  - build-cli:
+  - build-cli: &build-cli
       requires:
         - lint
         - lint-shell
-  - test-fpm:
+  - test-http: &test-http
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - test-http:
+  - test-fpm: &test-fpm
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - test-cli:
+  - test-cli: &test-cli
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - scan-vulnerability:
+  - scan-vulnerability: &scan-vulnerability
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - push-http:
+  - push-http: &push-context
       context: dockerhub
       filters:
         branches:
@@ -46,8 +46,21 @@ default_workflow_jobs: &default_workflow_jobs
         - test-fpm
         - test-http
         - scan-vulnerability
-  - push-fpm:
-      context: dockerhub
+  - push-fpm: *push-context
+  - push-cli: *push-context
+
+.default_workflow_jobs: &default_workflow_jobs
+  - lint
+  - lint-shell
+  - build-http: *build-http
+  - build-fpm: *build-fpm
+  - build-cli: *build-cli
+  - test-http: *test-http
+  - test-fpm: *test-fpm
+  - test-cli: *test-cli
+  - scan-vulnerability: *scan-vulnerability
+  - push-approval:
+      type: approval
       filters:
         branches:
           only: 
@@ -56,25 +69,23 @@ default_workflow_jobs: &default_workflow_jobs
         - test-cli
         - test-fpm
         - test-http
-        - scan-vulnerability
-  - push-cli:
+  - push-http: &push-context-approval
       context: dockerhub
       filters:
         branches:
           only: 
             - master
       requires:
-        - test-cli
-        - test-fpm
-        - test-http
-        - scan-vulnerability
+        - push-approval
+  - push-fpm: *push-context-approval
+  - push-cli: *push-context-approval
 
 workflows:
   version: 2
   lint-build-test-push:
     jobs: *default_workflow_jobs
-  nightly:
-    jobs: *default_workflow_jobs
+  scheduled:
+    jobs: *scheduled_workflow_jobs
     triggers:
       - schedule:
           cron: "0 3 * * 1,4"
