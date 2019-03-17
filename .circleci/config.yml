@@ -1,4 +1,4 @@
-version: 2
+version: 2.1
 
 default_workflow_jobs: &default_workflow_jobs
   - lint
@@ -83,6 +83,24 @@ workflows:
               only:
                 - master
 
+commands:
+  docker_load:
+    description: "Load Docker images from file"
+    parameters:
+      image:
+        type: string
+    steps:
+      - run: docker load -i ./tmp/usabillabv_php-<< parameters.image >>.tar
+  docker_load_all:
+    description: "Load all available docker images"
+    steps:
+      - docker_load:
+          image: http
+      - docker_load:
+          image: fpm
+      - docker_load:
+          image: cli
+
 jobs:
   lint:
     machine: true
@@ -100,7 +118,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load:
+          image: cli
       - run: make test-cli
       - store_test_results:
           path: ./tmp/test-results
@@ -110,7 +129,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: fpm
       - run: make test-fpm
       - store_test_results:
           path: ./tmp/test-results
@@ -120,8 +140,10 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: http
+      - docker_load:
+          image: fpm
       - run: sudo chown -R 1000:1000 ./test/functional/web/tmp/ # Ensure we have the same uid:gid as our `app` docker user
       - run: make test-http
       - store_test_results:
@@ -142,9 +164,7 @@ jobs:
           command: |
             sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
             sudo chmod +x /usr/local/bin/clair-scanner
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load_all
       - run: make ci-scan-vulnerability
       - store_artifacts:
           path: ./tmp/clair
@@ -190,7 +210,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - docker_load:
+          image: http
       - run: make ci-push-http
   push-cli:
     machine: true
@@ -198,7 +219,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load:
+          image: cli
       - run: make ci-push-cli
   push-fpm:
     machine: true
@@ -206,5 +228,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: fpm
       - run: make ci-push-fpm
