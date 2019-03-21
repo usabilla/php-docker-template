@@ -1,41 +1,41 @@
-version: 2
+version: 2.1
 
-default_workflow_jobs: &default_workflow_jobs
+.scheduled_workflow_jobs: &scheduled_workflow_jobs
   - lint
   - lint-shell
-  - build-http:
+  - build-http: &build-http
       requires:
         - lint
         - lint-shell
-  - build-fpm:
+  - build-fpm: &build-fpm
       requires:
         - lint
         - lint-shell
-  - build-cli:
+  - build-cli: &build-cli
       requires:
         - lint
         - lint-shell
-  - test-fpm:
+  - test-http: &test-http
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - test-http:
+  - test-fpm: &test-fpm
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - test-cli:
+  - test-cli: &test-cli
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - scan-vulnerability:
+  - scan-vulnerability: &scan-vulnerability
       requires:
         - build-http
         - build-fpm
         - build-cli
-  - push-http:
+  - push-http: &push-context
       context: dockerhub
       filters:
         branches:
@@ -46,8 +46,21 @@ default_workflow_jobs: &default_workflow_jobs
         - test-fpm
         - test-http
         - scan-vulnerability
-  - push-fpm:
-      context: dockerhub
+  - push-fpm: *push-context
+  - push-cli: *push-context
+
+.default_workflow_jobs: &default_workflow_jobs
+  - lint
+  - lint-shell
+  - build-http: *build-http
+  - build-fpm: *build-fpm
+  - build-cli: *build-cli
+  - test-http: *test-http
+  - test-fpm: *test-fpm
+  - test-cli: *test-cli
+  - scan-vulnerability: *scan-vulnerability
+  - push-approval:
+      type: approval
       filters:
         branches:
           only: 
@@ -56,32 +69,48 @@ default_workflow_jobs: &default_workflow_jobs
         - test-cli
         - test-fpm
         - test-http
-        - scan-vulnerability
-  - push-cli:
+  - push-http: &push-context-approval
       context: dockerhub
       filters:
         branches:
           only: 
             - master
       requires:
-        - test-cli
-        - test-fpm
-        - test-http
-        - scan-vulnerability
+        - push-approval
+  - push-fpm: *push-context-approval
+  - push-cli: *push-context-approval
 
 workflows:
   version: 2
   lint-build-test-push:
     jobs: *default_workflow_jobs
-  nightly:
-    jobs: *default_workflow_jobs
+  scheduled:
+    jobs: *scheduled_workflow_jobs
     triggers:
       - schedule:
-          cron: "0 3 * * *"
+          cron: "0 3 * * 1,4"
           filters:
             branches:
               only:
                 - master
+
+commands:
+  docker_load:
+    description: "Load Docker images from file"
+    parameters:
+      image:
+        type: string
+    steps:
+      - run: docker load -i ./tmp/usabillabv_php-<< parameters.image >>.tar
+  docker_load_all:
+    description: "Load all available docker images"
+    steps:
+      - docker_load:
+          image: http
+      - docker_load:
+          image: fpm
+      - docker_load:
+          image: cli
 
 jobs:
   lint:
@@ -100,7 +129,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load:
+          image: cli
       - run: make test-cli
       - store_test_results:
           path: ./tmp/test-results
@@ -110,7 +140,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: fpm
       - run: make test-fpm
       - store_test_results:
           path: ./tmp/test-results
@@ -120,8 +151,10 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: http
+      - docker_load:
+          image: fpm
       - run: sudo chown -R 1000:1000 ./test/functional/web/tmp/ # Ensure we have the same uid:gid as our `app` docker user
       - run: make test-http
       - store_test_results:
@@ -142,9 +175,7 @@ jobs:
           command: |
             sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
             sudo chmod +x /usr/local/bin/clair-scanner
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load_all
       - run: make ci-scan-vulnerability
       - store_artifacts:
           path: ./tmp/clair
@@ -190,7 +221,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-http.tar
+      - docker_load:
+          image: http
       - run: make ci-push-http
   push-cli:
     machine: true
@@ -198,7 +230,8 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-cli.tar
+      - docker_load:
+          image: cli
       - run: make ci-push-cli
   push-fpm:
     machine: true
@@ -206,5 +239,6 @@ jobs:
       - checkout
       - attach_workspace:
           at: ./tmp
-      - run: docker load -i ./tmp/usabillabv_php-fpm.tar
+      - docker_load:
+          image: fpm
       - run: make ci-push-fpm
