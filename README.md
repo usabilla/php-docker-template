@@ -35,8 +35,8 @@ All being based on the official images we provide:
 
 - PHP cli - Compiled without php-fpm, a simple php binary image
 - PHP fpm - Specifically designed to share the php-fpm socket towards a fastcgi compliant web sever
-- Nginx - Meant for PHP projects built on the PHP FPM image in this repository, since it looks for a php-fpm socket and
-doesn't have access to the PHP code
+- Nginx - Meant for PHP projects built on the PHP FPM image in this repository, since [it looks for a php-fpm socket
+and doesn't have access to the PHP code](docs/adr/0002-nginx-configuration-is-shaped-for-php-needs.md)
 
 The fpm/HTTP server relationship:
 
