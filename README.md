@@ -70,7 +70,7 @@ All images are based on their official variants, being:
 
 ## Alpine Linux situation
 
-Even though both of the images are based on the Alpine Linux, the PHP official repository gives us the option to choose between its versions, at this moment being `3.7` or `3.8`.
+Even though both of the images are based on the Alpine Linux, the PHP official repository gives us the option to choose between its versions, at this moment being `3.8` or `3.9`.
 
 Meanwhile on the official Nginx images we have no control over which Alpine version we use, this explains the tagging strategy coming in the next section.
 
