@@ -286,6 +286,16 @@ ENV NGINX_EXPOSE_VERSION="on"
 
 ## For PHP customization
 
+### PHP configuration
+
+The official PHP images ship with recommended
+[`ini` configuration files](https://github.com/docker-library/docs/tree/master/php#configuration) for both
+development and production. In order to guarantee a reasonable configuration, our images load these files by default
+in each image respectively at this path: `$PHP_INI_DIR/php.ini`.
+
+Images that wish to extend the ones provided in this repository can override these configurations easily by including
+customized configuration files in the `$PHP_INI_DIR/conf.d/` directory.
+
 ### Installing & enabling PHP extensions
 
 This image bundles helper scripts to manage PHP extensions (`docker-php-ext-configure`, `docker-php-ext-install`, and
@@ -384,7 +394,8 @@ Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv
 Not recommended if you're layering with your production images, using a different base image doesn't allow to you share
 cache among your Dockerfile targets.
 
-We ship the image with a dev mode helper, which can install Xdebug and configure it.
+We ship the image with a dev mode helper, which can install and configure Xdebug, as well as override the production
+`php.ini` with the recommended development version.
 
 ##### Helper script
 
@@ -394,10 +405,13 @@ Installing and enabling the extensions
 $ docker-php-dev-mode xdebug
 ```
 
-We also provide some default configuration to make it easier to start your debugging session, you can enable it also via
-the helper script.
+As mentioned, we override the production `php.ini` with the recommended development version, which can be found
+[here](https://github.com/php/php-src/blob/master/php.ini-development).
 
-The contents of the configuration can be found [here](src/php/conf/available/xdebug.ini).
+Next to that we provide some additional configuration to make it easier to start your debugging session. The contents
+of that configuration can be found [here](src/php/conf/available/xdebug.ini).
+
+Both are enabled via the helper script, by running
 
 ```console
 $ docker-php-dev-mode config
