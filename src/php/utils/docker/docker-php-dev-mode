@@ -5,7 +5,7 @@ usage() {
 	echo "usage: $0 COMMAND"
 	echo
 	echo "Turns PHP into development mode."
-	echo "There's not option to revert it since this should only be executed for dev images or runtime debugging."
+	echo "There's no option to revert it since this should only be executed for dev images or runtime debugging."
 	echo
 	echo "Commands:"
 	echo "   xdebug  downloads, installs and enable xdebug in the container"
@@ -37,6 +37,15 @@ case "$1" in
 		;;
 
 	config)
+		if [ -f "${PHP_INI_DIR:?"The env variable PHP_INI_DIR must be set to run this script"}/php.ini-development" ]; then
+			# Override the configuration to symlink to the recommended development configuration
+			# ref: https://github.com/docker-library/docs/tree/master/php#configuration
+			ln -sf "$PHP_INI_DIR"/php.ini-development "$PHP_INI_DIR"/php.ini
+		else
+			>&2 echo "Could not configure php.ini, since the \"php.ini-development\" file does not exist"
+			exit 1
+		fi
+
 		cp /usr/local/etc/php/conf.d/available/dev.ini /usr/local/etc/php/conf.d/zzz_dev.ini
 		;;
 

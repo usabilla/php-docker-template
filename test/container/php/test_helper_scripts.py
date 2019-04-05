@@ -19,6 +19,13 @@ def test_php_images_contain_helper_scripts(host):
         assert host.file(file).is_file is True
         assert host.file(file).mode == 0o775
 
+@pytest.mark.php_dev
+def test_php_images_contain_dev_helper_scripts(host):
+    file = host.file('/usr/local/bin/docker-php-dev-mode')
+
+    assert file.is_file is True
+    assert file.mode == 0o775
+
 @pytest.mark.php
 def test_php_source_tarball_script(host):
     assert host.file("/usr/src/php.tar.xz").exists is False
