@@ -74,6 +74,9 @@ test-http: ./tmp/build-http.tags ./tmp/build-fpm.tags
 	xargs -I % ./test-http.sh $$(head -1 ./tmp/build-fpm.tags) % < ./tmp/build-http.tags
 	xargs -I % ./test-http.sh $$(tail -1 ./tmp/build-fpm.tags) % < ./tmp/build-http.tags
 
+test-http-e2e: ./tmp/build-http.tags
+	xargs -I % ./test-http-e2e.sh % < ./tmp/build-http.tags
+
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d
 	RETRIES=0 && while ! wget -T 10 -q -O /dev/null http://localhost:6060/v1/namespaces ; do sleep 1 ; echo -n "." ; if [ $${RETRIES} -eq 10 ] ; then echo " Timeout, aborting." ; exit 1 ; fi ; RETRIES=$$(($${RETRIES}+1)) ; done
