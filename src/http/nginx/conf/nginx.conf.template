@@ -1,7 +1,7 @@
 user  nginx;
 worker_processes  ${NGINX_WORKERS_PROCESSES};
 
-error_log  /var/log/nginx/error.log warn;
+error_log  stderr warn;
 pid        /var/run/nginx.pid;
 
 events {
@@ -17,8 +17,8 @@ http {
                     '${ESCAPE}status ${ESCAPE}body_bytes_sent "${ESCAPE}http_referer" '
                     '"${ESCAPE}http_user_agent" "${ESCAPE}http_x_forwarded_for"';
 
-    access_log /var/log/nginx/access.log;
-    error_log /var/log/nginx/error.log notice;
+    access_log /dev/stdout;
+    error_log stderr notice;
 
     sendfile    on;
     tcp_nopush  on;
