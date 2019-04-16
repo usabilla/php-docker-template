@@ -18,9 +18,6 @@ ENV NGINX_CLIENT_BODY_BUFFER_SIZE=16k
 ENV NGINX_CLIENT_MAX_BODY_SIZE=1m
 ENV NGINX_LARGE_CLIENT_HEADER_BUFFERS="4 8k"
 
-# Patch CVE-2018-1152 CVE-2018-11813 CVE-2017-15232
-RUN apk upgrade --no-cache libjpeg-turbo
-
 # Nginx helper scripts
 COPY src/http/nginx/docker-nginx-* /usr/local/bin/
 
