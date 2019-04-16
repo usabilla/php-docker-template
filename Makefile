@@ -39,7 +39,7 @@ build-http: clean-tags
 # Adding arbitrary version 1.0 in order to make sure if we break compatibility we have to up it
 build-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
 build-prometheus-exporter-file: clean-tags
-	./build-prometheus-exporter-file.sh 1.15 prometheus-exporter-file1.0
+	./build-prometheus-exporter-file.sh 1.15 prometheus-exporter-file1.0 prometheus-exporter-file1
 
 .NOTPARALLEL: clean-tags
 clean-tags:

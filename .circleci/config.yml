@@ -22,6 +22,9 @@ version: 2.1
         - build-fpm
         - build-cli
   - test-http-e2e: *test-http
+  - test-prometheus-exporter-file-e2e: &test-prometheus-exporter-file-e2e
+      requires:
+        - build-prometheus-exporter-file
   - test-fpm: &test-fpm
       requires:
         - build-http
@@ -49,7 +52,9 @@ version: 2.1
         - test-fpm
         - test-http
         - test-http-e2e
+        - test-prometheus-exporter-file-e2e
         - scan-vulnerability
+  - push-prometheus-exporter-file: *push-context
   - push-fpm: *push-context
   - push-cli: *push-context
 
@@ -62,6 +67,7 @@ version: 2.1
   - build-cli: *build-cli
   - test-http: *test-http
   - test-http-e2e: *test-http
+  - test-prometheus-exporter-file-e2e: *test-prometheus-exporter-file-e2e
   - test-fpm: *test-fpm
   - test-cli: *test-cli
   - scan-vulnerability: *scan-vulnerability
@@ -75,6 +81,7 @@ version: 2.1
         - test-cli
         - test-fpm
         - test-http
+        - test-prometheus-exporter-file-e2e
   - push-http: &push-context-approval
       context: dockerhub
       filters:
@@ -83,6 +90,7 @@ version: 2.1
             - master
       requires:
         - push-approval
+  - push-prometheus-exporter-file: *push-context-approval
   - push-fpm: *push-context-approval
   - push-cli: *push-context-approval
 
