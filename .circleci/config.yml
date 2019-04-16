@@ -20,6 +20,7 @@ version: 2.1
         - build-http
         - build-fpm
         - build-cli
+  - test-http-e2e: *test-http
   - test-fpm: &test-fpm
       requires:
         - build-http
@@ -45,6 +46,7 @@ version: 2.1
         - test-cli
         - test-fpm
         - test-http
+        - test-http-e2e
         - scan-vulnerability
   - push-fpm: *push-context
   - push-cli: *push-context
@@ -56,6 +58,7 @@ version: 2.1
   - build-fpm: *build-fpm
   - build-cli: *build-cli
   - test-http: *test-http
+  - test-http-e2e: *test-http
   - test-fpm: *test-fpm
   - test-cli: *test-cli
   - scan-vulnerability: *scan-vulnerability
@@ -157,6 +160,17 @@ jobs:
           image: fpm
       - run: sudo chown -R 1000:1000 ./test/functional/web/tmp/ # Ensure we have the same uid:gid as our `app` docker user
       - run: make test-http
+      - store_test_results:
+          path: ./tmp/test-results
+  test-http-e2e:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - docker_load:
+          image: http
+      - run: make test-http-e2e
       - store_test_results:
           path: ./tmp/test-results
   scan-vulnerability:
