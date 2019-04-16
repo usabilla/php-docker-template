@@ -7,6 +7,7 @@ version: 2.1
       requires:
         - lint
         - lint-shell
+  - build-prometheus-exporter-file: *build-http
   - build-fpm: &build-fpm
       requires:
         - lint
@@ -55,6 +56,7 @@ version: 2.1
   - lint
   - lint-shell
   - build-http: *build-http
+  - build-prometheus-exporter-file: *build-http
   - build-fpm: *build-fpm
   - build-cli: *build-cli
   - test-http: *test-http
@@ -110,6 +112,8 @@ commands:
     steps:
       - docker_load:
           image: http
+      - docker_load:
+          image: prometheus-exporter-file
       - docker_load:
           image: fpm
       - docker_load:
@@ -205,6 +209,18 @@ jobs:
           paths:
             - usabillabv_php-http.tar
             - build-http.tags
+  build-prometheus-exporter-file:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-prometheus-exporter-file
+      - run: cat ./tmp/build-prometheus-exporter-file.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 1}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-prometheus-exporter-file.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-prometheus-exporter-file.tar
+            - build-prometheus-exporter-file.tags
   build-fpm:
     machine: true
     steps:

@@ -1,5 +1,5 @@
 qa: lint lint-shell build test scan-vulnerability
-build: clean-tags build-cli build-fpm build-http
+build: clean-tags build-cli build-fpm build-http build-prometheus-exporter-file
 push: build push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
@@ -35,6 +35,12 @@ build-http: clean-tags
 	./build-nginx.sh 1.15 nginx
 	./build-nginx.sh 1.14
 
+# Docker Prometheus Exporter file images build matrix ./build-prometheus-exporter-file.sh (nginx version) (extra tag)
+# Adding arbitrary version 1.0 in order to make sure if we break compatibility we have to up it
+build-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
+build-prometheus-exporter-file: clean-tags
+	./build-prometheus-exporter-file.sh 1.15 prometheus-exporter-file1.0
+
 .NOTPARALLEL: clean-tags
 clean-tags:
 	rm ${current_dir}/tmp/build-${BUILDINGIMAGE}.tags || true
@@ -48,6 +54,9 @@ push-fpm:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
 push-http: BUILDINGIMAGE=http
 push-http:
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
+push-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
+push-prometheus-exporter-file:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
 
 # CI dependencies
