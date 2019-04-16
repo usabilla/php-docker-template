@@ -22,10 +22,12 @@ declare -r USABILLA_EXTRA_TAG_DEV="${USABILLA_EXTRA_TAG}-dev"
 
 TAG_FILE="./tmp/build-${IMAGE}.tags"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG}" --target="${IMAGE}" -f - . \
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG}" \
+    --build-arg=NGINX_VHOST_TEMPLATE=php-fpm --target="${IMAGE}" -f - . \
     && echo "${USABILLA_TAG}" >> "${TAG_FILE}"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG_DEV}" --target="${IMAGE}-dev" -f - . \
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG_DEV}" \
+    --build-arg=NGINX_VHOST_TEMPLATE=php-fpm --target="${IMAGE}-dev" -f - . \
     && echo "$USABILLA_TAG_DEV" >> "${TAG_FILE}"
 
 if [[ -n ${IMAGE_EXTRA_TAG} ]]; then

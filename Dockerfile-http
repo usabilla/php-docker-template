@@ -5,6 +5,8 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
+ARG NGINX_VHOST_TEMPLATE
+
 # Env definition
 ENV NGINX_DOCUMENT_ROOT="/opt/project/public"
 ENV NGINX_SERVER_NAME=localhost
@@ -23,7 +25,8 @@ RUN apk upgrade --no-cache libjpeg-turbo
 COPY src/http/nginx/docker-nginx-* /usr/local/bin/
 
 # Nginx configuration files
-COPY src/http/nginx/conf/ /etc/nginx/
+COPY src/http/nginx/conf/main /etc/nginx/
+COPY src/http/nginx/conf/${NGINX_VHOST_TEMPLATE} /etc/nginx/
 
 CMD ["docker-nginx-entrypoint"]
 
