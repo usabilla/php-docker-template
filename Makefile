@@ -69,7 +69,7 @@ lint:
 lint-shell:
 	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build* test-*
 
-test: test-cli test-fpm test-http
+test: test-cli test-fpm test-http test-prometheus-exporter-file-e2e
 
 test-cli: ./tmp/build-cli.tags
 	xargs -I % ./test-cli.sh % < ./tmp/build-cli.tags
@@ -85,6 +85,9 @@ test-http: ./tmp/build-http.tags ./tmp/build-fpm.tags
 
 test-http-e2e: ./tmp/build-http.tags
 	xargs -I % ./test-http-e2e.sh % < ./tmp/build-http.tags
+
+test-prometheus-exporter-file-e2e: ./tmp/build-prometheus-exporter-file.tags
+	xargs -I % ./test-prometheus-exporter-file-e2e.sh % < ./tmp/build-prometheus-exporter-file.tags
 
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d

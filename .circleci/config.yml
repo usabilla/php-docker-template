@@ -35,6 +35,7 @@ version: 2.1
   - scan-vulnerability: &scan-vulnerability
       requires:
         - build-http
+        - build-prometheus-exporter-file
         - build-fpm
         - build-cli
   - push-http: &push-context
@@ -177,6 +178,17 @@ jobs:
       - run: make test-http-e2e
       - store_test_results:
           path: ./tmp/test-results
+  test-prometheus-exporter-file-e2e:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - docker_load:
+          image: prometheus-exporter-file
+      - run: make test-prometheus-exporter-file-e2e
+      - store_test_results:
+          path: ./tmp/test-results
   scan-vulnerability:
     machine: true
     steps:
@@ -254,6 +266,15 @@ jobs:
       - docker_load:
           image: http
       - run: make ci-push-http
+  push-prometheus-exporter-file:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - docker_load:
+          image: prometheus-exporter-file
+      - run: make ci-push-prometheus-exporter-file
   push-cli:
     machine: true
     steps:
