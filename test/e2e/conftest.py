@@ -13,6 +13,9 @@ def tag(request):
 
 @pytest.fixture
 def container(host, tag):
-    container = host.check_output('docker run -p 80 --rm -d {}'.format(tag))
+    container = host.check_output('docker run -p 80 -d {}'.format(tag))
     yield container
     host.check_output('docker stop {}'.format(container))
+    
+    # Remove afterwads thus the tests still have access to the logs
+    host.check_output('docker rm -f {}'.format(container))
