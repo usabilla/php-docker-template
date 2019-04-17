@@ -20,6 +20,7 @@ A series of Docker images to run PHP Applications on Usabilla Style
 - [Alpine Linux situation](#alpine-linux-situation)
 - [The available tags](#the-available-tags)
 - [Adding more supported versions](#adding-more-supported-versions)
+- [Prometheus Exporter](#prometheus-exporter)
 - [Dockerfile example with Buildkit](#dockerfile-example)
 - [PHP FPM functional example](docs/examples/hello-world-fpm)
 - [Contributing](.github/CONTRIBUTING.md)
@@ -416,6 +417,72 @@ Both are enabled via the helper script, by running
 ```console
 $ docker-php-dev-mode config
 ```
+
+## Prometheus Exporter
+
+In order to monitor applications many systems implement Prometheus to expose metrics, one challenge specially in PHP is how to expose those to Prometheus without having to, either implement an endpoint in our application, or add HTTP and an endpoint for non-interactive containers.
+
+This prove has the aim to provide support for the sidecar pattern for monitoring.
+
+More about ["Make your application easy to monitor" by Google](https://cloud.google.com/solutions/best-practices-for-operating-containers#make_your_application_easy_to_monitor)
+
+### Static File
+
+The easiest way to solve this problem in the PHP ecosystem is to make your application write down the metrics to a text file, which then is shared via a volume to a sidecar container which can expose it to Prometheus.
+
+The container we offer is a simple Nginx based on the same configuration as [the one for PHP-FPM](#for-nginx-customization), with the difference it only serves static content.
+
+#### Docker image
+
+The image named `prometheus-exporter-file` is available via our docker registry under with the tags (from less to more specific versions):
+
+- `usabillabv/php:prometheus-exporter-file` - This has the behavior of latest
+- `usabillabv/php:prometheus-exporter-file1`
+- `usabillabv/php:prometheus-exporter-file1.0`
+
+#### Kubernetes Deployment Example
+
+```yaml
+# Pod v1 core Spec - https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.11/#pod-v1-core
+
+spec:
+  template:
+    metadata:
+      annotations:
+        prometheus.io/path: /metrics
+        prometheus.io/port: "80"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+      - image: usabillabv/php:7.3-cli-alpine3.9
+        imagePullPolicy: IfNotPresent
+        volumeMounts:
+        - mountPath: /prometheus
+          name: prometheus-metrics
+      - image: usabillabv/php:prometheus-exporter-file1
+        imagePullPolicy: IfNotPresent
+        name: prometheus-exporter
+        ports:
+        - containerPort: 80
+          name: http
+          protocol: TCP
+        volumeMounts:
+        - mountPath: /opt/project/public
+          name: prometheus-metrics
+      volumes:
+      - emptyDir: {}
+        name: prometheus-metrics
+
+```
+
+In this example the PHP container *must* write down the metrics in the file `/prometheus/metrics`, the exporter container will have the same file mount at `/opt/project/public/metrics`.
+Which will then be available via http as `http://pod:80/metrics`, observe that the filename becomes the url which we configured the prometheus scrape to look for.
+
+### Open Census
+
+_To be created and/or documented_
+
+For now please refer to: https://github.com/basvanbeek/opencensus-php-docker and https://github.com/census-instrumentation/opencensus-php
 
 ## Dockerfile example
 
