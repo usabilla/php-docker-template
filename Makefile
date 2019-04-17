@@ -1,5 +1,5 @@
 qa: lint lint-shell build test scan-vulnerability
-build: clean-tags build-cli build-fpm build-http
+build: clean-tags build-cli build-fpm build-http build-prometheus-exporter-file
 push: build push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
@@ -35,6 +35,12 @@ build-http: clean-tags
 	./build-nginx.sh 1.15 nginx
 	./build-nginx.sh 1.14
 
+# Docker Prometheus Exporter file images build matrix ./build-prometheus-exporter-file.sh (nginx version) (extra tag)
+# Adding arbitrary version 1.0 in order to make sure if we break compatibility we have to up it
+build-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
+build-prometheus-exporter-file: clean-tags
+	./build-prometheus-exporter-file.sh 1.15 prometheus-exporter-file1.0 prometheus-exporter-file1
+
 .NOTPARALLEL: clean-tags
 clean-tags:
 	rm ${current_dir}/tmp/build-${BUILDINGIMAGE}.tags || true
@@ -49,6 +55,9 @@ push-fpm:
 push-http: BUILDINGIMAGE=http
 push-http:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
+push-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
+push-prometheus-exporter-file:
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
 
 # CI dependencies
 ci-docker-login:
@@ -60,7 +69,7 @@ lint:
 lint-shell:
 	docker run --rm -v ${current_dir}:/mnt:ro koalaman/shellcheck src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build* test-*
 
-test: test-cli test-fpm test-http
+test: test-cli test-fpm test-http test-prometheus-exporter-file-e2e
 
 test-cli: ./tmp/build-cli.tags
 	xargs -I % ./test-cli.sh % < ./tmp/build-cli.tags
@@ -76,6 +85,9 @@ test-http: ./tmp/build-http.tags ./tmp/build-fpm.tags
 
 test-http-e2e: ./tmp/build-http.tags
 	xargs -I % ./test-http-e2e.sh % < ./tmp/build-http.tags
+
+test-prometheus-exporter-file-e2e: ./tmp/build-prometheus-exporter-file.tags
+	xargs -I % ./test-prometheus-exporter-file-e2e.sh % < ./tmp/build-prometheus-exporter-file.tags
 
 scan-vulnerability:
 	docker-compose -f test/security/docker-compose.yml -p clair-ci up -d

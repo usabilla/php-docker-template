@@ -7,6 +7,7 @@ version: 2.1
       requires:
         - lint
         - lint-shell
+  - build-prometheus-exporter-file: *build-http
   - build-fpm: &build-fpm
       requires:
         - lint
@@ -21,6 +22,9 @@ version: 2.1
         - build-fpm
         - build-cli
   - test-http-e2e: *test-http
+  - test-prometheus-exporter-file-e2e: &test-prometheus-exporter-file-e2e
+      requires:
+        - build-prometheus-exporter-file
   - test-fpm: &test-fpm
       requires:
         - build-http
@@ -34,6 +38,7 @@ version: 2.1
   - scan-vulnerability: &scan-vulnerability
       requires:
         - build-http
+        - build-prometheus-exporter-file
         - build-fpm
         - build-cli
   - push-http: &push-context
@@ -47,7 +52,9 @@ version: 2.1
         - test-fpm
         - test-http
         - test-http-e2e
+        - test-prometheus-exporter-file-e2e
         - scan-vulnerability
+  - push-prometheus-exporter-file: *push-context
   - push-fpm: *push-context
   - push-cli: *push-context
 
@@ -55,10 +62,12 @@ version: 2.1
   - lint
   - lint-shell
   - build-http: *build-http
+  - build-prometheus-exporter-file: *build-http
   - build-fpm: *build-fpm
   - build-cli: *build-cli
   - test-http: *test-http
   - test-http-e2e: *test-http
+  - test-prometheus-exporter-file-e2e: *test-prometheus-exporter-file-e2e
   - test-fpm: *test-fpm
   - test-cli: *test-cli
   - scan-vulnerability: *scan-vulnerability
@@ -72,6 +81,7 @@ version: 2.1
         - test-cli
         - test-fpm
         - test-http
+        - test-prometheus-exporter-file-e2e
   - push-http: &push-context-approval
       context: dockerhub
       filters:
@@ -80,6 +90,7 @@ version: 2.1
             - master
       requires:
         - push-approval
+  - push-prometheus-exporter-file: *push-context-approval
   - push-fpm: *push-context-approval
   - push-cli: *push-context-approval
 
@@ -110,6 +121,8 @@ commands:
     steps:
       - docker_load:
           image: http
+      - docker_load:
+          image: prometheus-exporter-file
       - docker_load:
           image: fpm
       - docker_load:
@@ -173,6 +186,17 @@ jobs:
       - run: make test-http-e2e
       - store_test_results:
           path: ./tmp/test-results
+  test-prometheus-exporter-file-e2e:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - docker_load:
+          image: prometheus-exporter-file
+      - run: make test-prometheus-exporter-file-e2e
+      - store_test_results:
+          path: ./tmp/test-results
   scan-vulnerability:
     machine: true
     steps:
@@ -205,6 +229,18 @@ jobs:
           paths:
             - usabillabv_php-http.tar
             - build-http.tags
+  build-prometheus-exporter-file:
+    machine: true
+    steps:
+      - checkout
+      - run: make build-prometheus-exporter-file
+      - run: cat ./tmp/build-prometheus-exporter-file.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 1}}' %
+      - run: docker save usabillabv/php -o ./tmp/usabillabv_php-prometheus-exporter-file.tar
+      - persist_to_workspace:
+          root: ./tmp
+          paths:
+            - usabillabv_php-prometheus-exporter-file.tar
+            - build-prometheus-exporter-file.tags
   build-fpm:
     machine: true
     steps:
@@ -238,6 +274,15 @@ jobs:
       - docker_load:
           image: http
       - run: make ci-push-http
+  push-prometheus-exporter-file:
+    machine: true
+    steps:
+      - checkout
+      - attach_workspace:
+          at: ./tmp
+      - docker_load:
+          image: prometheus-exporter-file
+      - run: make ci-push-prometheus-exporter-file
   push-cli:
     machine: true
     steps:

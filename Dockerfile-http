@@ -5,6 +5,8 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
+ARG NGINX_VHOST_TEMPLATE
+
 # Env definition
 ENV NGINX_DOCUMENT_ROOT="/opt/project/public"
 ENV NGINX_SERVER_NAME=localhost
@@ -16,14 +18,12 @@ ENV NGINX_CLIENT_BODY_BUFFER_SIZE=16k
 ENV NGINX_CLIENT_MAX_BODY_SIZE=1m
 ENV NGINX_LARGE_CLIENT_HEADER_BUFFERS="4 8k"
 
-# Patch CVE-2018-1152 CVE-2018-11813 CVE-2017-15232
-RUN apk upgrade --no-cache libjpeg-turbo
-
 # Nginx helper scripts
 COPY src/http/nginx/docker-nginx-* /usr/local/bin/
 
 # Nginx configuration files
-COPY src/http/nginx/conf/ /etc/nginx/
+COPY src/http/nginx/conf/main /etc/nginx/
+COPY src/http/nginx/conf/${NGINX_VHOST_TEMPLATE} /etc/nginx/
 
 CMD ["docker-nginx-entrypoint"]
 
