@@ -40,7 +40,8 @@ RUN install-shush && rm -f /usr/local/bin/install-shush \
 
 STOPSIGNAL SIGTERM
 
-CMD ["/usr/local/bin/shush", "exec", "php-fpm", "--force-stderr"]
+ENTRYPOINT [ "docker-php-entrypoint-init" ]
+CMD ["--force-stderr"]
 
 # Base images don't need healthcheck since they are not running applications
 # this can be overriden in the child images
@@ -54,6 +55,3 @@ FROM fpm as fpm-dev
 # Install Xdebug and development specific configuration
 RUN docker-php-dev-mode xdebug \
     && docker-php-dev-mode config
-
-# Change entrypoint back to the default because we don't need shush in development
-CMD ["docker-php-entrypoint", "--force-stderr"]

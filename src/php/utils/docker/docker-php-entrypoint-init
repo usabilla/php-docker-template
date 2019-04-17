@@ -1,0 +1,20 @@
+#!/bin/sh
+set -e
+
+# first arg is `-f` or `--some-option` or if it's empty
+if [ -z "$1" ] || [ "${1#-}" != "$1" ]; then
+	set -- php-fpm "$@"
+fi
+
+if [ "$1" = php-fpm ]; then
+    if env | grep -E "^KMS_ENCRYPTED"; then
+        set -- shush exec -- "$@"
+    fi
+
+    # Rewrite SIGINT  to SIGQUIT
+    # Rewrite SIGTERM to SIGQUIT
+    # Rewrite SIGHUP  to SIGUSR2
+    set -- dumb-init --rewrite 2:3 --rewrite 15:3 --rewrite 1:17 -- "$@"
+fi
+
+exec "$@"
