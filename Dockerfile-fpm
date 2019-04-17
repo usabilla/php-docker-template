@@ -9,6 +9,7 @@ RUN set -x \
 
 # Install docker help scripts
 COPY src/php/utils/docker/ /usr/local/bin/
+COPY src/php/utils/install-* /usr/local/bin/
 
 # Install PHP extensions
 RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
@@ -32,13 +33,10 @@ COPY src/gpg /usr/local/etc/gpg
 COPY src/php/conf/ /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
 
-# Install shush
-COPY src/php/utils/install-shush /usr/local/bin/
-RUN install-shush && rm -rf /usr/local/bin/install-shush
-
-# Install composer
-COPY src/php/utils/install-composer /usr/local/bin/
-RUN install-composer && rm -rf /usr/local/bin/install-composer
+# Install shush, dumb-init and composer
+RUN install-shush && rm -f /usr/local/bin/install-shush \
+    && install-dumb-init && rm -f /usr/local/bin/install-dumb-init \
+    && install-composer && rm -f /usr/local/bin/install-composer
 
 STOPSIGNAL SIGTERM
 
