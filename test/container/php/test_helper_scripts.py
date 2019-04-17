@@ -11,6 +11,7 @@ def test_php_images_contain_helper_scripts(host):
         "/usr/local/bin/docker-php-ext-pdo-pgsql",
         "/usr/local/bin/docker-php-ext-rdkafka",
         "/usr/local/bin/docker-php-entrypoint",
+        "/usr/local/bin/docker-php-entrypoint-init",
         "/usr/local/bin/php-fpm-healthcheck",
     ]
 
