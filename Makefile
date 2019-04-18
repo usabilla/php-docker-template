@@ -4,6 +4,7 @@ push: build push-cli build-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
 ci-push-http: ci-docker-login push-http
+ci-push-prometheus-exporter-file: ci-docker-login push-prometheus-exporter-file
 
 mkfile_path := $(abspath $(lastword $(MAKEFILE_LIST)))
 current_dir := $(abspath $(patsubst %/,%,$(dir $(mkfile_path))))
