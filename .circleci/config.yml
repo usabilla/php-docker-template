@@ -21,6 +21,7 @@ version: 2.1
         - build-http
         - build-fpm
         - build-cli
+        - build-prometheus-exporter-file
   - test-http-e2e: *test-http
   - test-prometheus-exporter-file-e2e: &test-prometheus-exporter-file-e2e
       requires:
