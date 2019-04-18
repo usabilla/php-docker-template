@@ -1,0 +1,15 @@
+#!/bin/sh
+
+set -xeu
+
+VERSION="1.2.2"
+
+curl -sL -o /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v"$VERSION"/dumb-init_"$VERSION"_amd64
+
+chmod +x /usr/local/bin/dumb-init
+
+dumb-init --version
+
+RESULT=$?
+
+exit $RESULT
