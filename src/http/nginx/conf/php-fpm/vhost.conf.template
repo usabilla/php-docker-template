@@ -12,12 +12,12 @@ server {
     }
     
     location / {
-        include /etc/nginx/location.d-enabled/*.conf;
-        
         rewrite ^ /index.php last;
     }
 
     location ~ \.php$ {
+        include /etc/nginx/location.d-enabled/*.conf;
+        
         fastcgi_pass   unix:/var/run/php-fpm.sock;
         fastcgi_split_path_info ^(.+\.php)(/.*)$;
 
