@@ -285,6 +285,27 @@ in the `Dockerfile`, e.g.:
 ENV NGINX_EXPOSE_VERSION="on"
 ```
 
+### Cors configuration
+
+There's a CORS helper available, it can be activated by running:
+
+```console
+$ docker-nginx-location.d-enable cors
+
+```
+
+Or by setting an environment variable:
+
+```Dockerfile
+ENV NGINX_CORS_ENABLE=true
+```
+
+It's also possible to customize the `Allow-Origin` but setting an environment variable in the `Dockerfile`, e.g.:
+
+```Dockerfile
+ENV NGINX_CORS_ALLOW_ORIGIN="https://my-domain.cool"
+```
+
 ## For PHP customization
 
 ### PHP configuration
