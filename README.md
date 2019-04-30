@@ -294,6 +294,12 @@ $ docker-nginx-location.d-enable cors
 
 ```
 
+Or by setting an environment variable:
+
+```Dockerfile
+ENV NGINX_CORS_ENABLE=true
+```
+
 It's also possible to customize the `Allow-Origin` but setting an environment variable in the `Dockerfile`, e.g.:
 
 ```Dockerfile
