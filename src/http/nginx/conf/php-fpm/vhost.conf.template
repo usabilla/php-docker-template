@@ -12,6 +12,8 @@ server {
     }
     
     location / {
+        include /etc/nginx/location.d-enabled/*.conf;
+        
         rewrite ^ /index.php last;
     }
 

@@ -4,4 +4,5 @@ set -e
 ## From the environment variables replace the nginx configuration placeholders
 ESCAPE='$' envsubst < /etc/nginx/vhost.conf.template > /etc/nginx/conf.d/default.conf
 ESCAPE='$' envsubst < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+ESCAPE='$' envsubst < /etc/nginx/location.d-available/cors.conf.template > /etc/nginx/location.d-available/cors.conf
 exec nginx -g 'daemon off;'
