@@ -20,10 +20,13 @@ ENV NGINX_LARGE_CLIENT_HEADER_BUFFERS="4 8k"
 ENV NGINX_CORS_ENABLE=false
 ENV NGINX_CORS_ALLOW_ORIGIN="*"
 
+# Patch gCVE-2019-11068 (libxslt)
+RUN apk upgrade --no-cache libxslt
+
 # Nginx helper scripts
 COPY src/http/nginx/docker-nginx-* /usr/local/bin/
 
-# Nginx configuration files
+# Nginx configuration filesg 
 COPY src/http/nginx/conf/main /etc/nginx/
 COPY src/http/nginx/conf/${NGINX_VHOST_TEMPLATE} /etc/nginx/
 

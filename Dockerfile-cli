@@ -19,8 +19,8 @@ RUN set -x \
     && docker-php-source-tarball clean && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
 
-# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2)
-RUN apk upgrade --no-cache curl libxml2
+# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
+RUN apk upgrade --no-cache curl libxml2 libxslt
 
 # Create a symlink to the recommended production configuration
 # ref: https://github.com/docker-library/docs/tree/master/php#configuration

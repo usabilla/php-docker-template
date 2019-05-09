@@ -22,8 +22,8 @@ RUN apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && apk del .phpize-deps \
     && apk add --no-cache fcgi
 
-# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2)
-RUN apk upgrade --no-cache curl libxml2
+# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
+RUN apk upgrade --no-cache curl libxml2 libxslt
 
 # Create a symlink to the recommended production configuration
 # ref: https://github.com/docker-library/docs/tree/master/php#configuration
