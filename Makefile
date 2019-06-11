@@ -1,6 +1,6 @@
 qa: lint lint-shell build test scan-vulnerability
 build: clean-tags build-cli build-fpm build-http build-prometheus-exporter-file
-push: build push-cli build-fpm push-http
+push: build push-cli push-fpm push-http
 ci-push-cli: ci-docker-login push-cli
 ci-push-fpm: ci-docker-login push-fpm
 ci-push-http: ci-docker-login push-http
