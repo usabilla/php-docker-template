@@ -1,9 +1,9 @@
 # Allow CORS if environment variable is set
 add_header 'Access-Control-Allow-Origin' "${NGINX_CORS_ALLOW_ORIGIN}" always;
 add_header 'Access-Control-Allow-Credentials' 'true' always;
-add_header 'Access-Control-Allow-Methods' "*" always;
-add_header 'Access-Control-Allow-Headers' "*" always;
-add_header 'Access-Control-Expose-Headers' "*" always;
+add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, PATCH, DELETE' always;
+add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
 
 if (${ESCAPE}request_method = 'OPTIONS') {
     # Pre fligh information is valid for an hour
@@ -14,9 +14,9 @@ if (${ESCAPE}request_method = 'OPTIONS') {
     # Default CORS headers (have to be reapeated, no inheritance from upper scope)
     add_header 'Access-Control-Allow-Origin' "${NGINX_CORS_ALLOW_ORIGIN}" always;
     add_header 'Access-Control-Allow-Credentials' 'true' always;
-    add_header 'Access-Control-Allow-Methods' "*" always;
-    add_header 'Access-Control-Allow-Headers' "*" always;
-    add_header 'Access-Control-Expose-Headers' "*" always;
+    add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, PATCH, DELETE' always;
+    add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range' always;
+    add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range' always;
 
     return 204;
 }
