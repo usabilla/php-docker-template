@@ -53,9 +53,15 @@ def test_development_config_is_effective(host):
 def test_cli_configuration_is_effective(host):
     config = get_config(host)
 
-    assert u'memory_limit => 1024M => 1024M' in config
+    assert u'memory_limit => -1 => -1' in config
     assert u'opcache.enable_cli => On => On' in config
     assert u'apc.enable_cli => On => On' in config
+
+@pytest.mark.php_fpm
+def test_fpm_configuration_is_effective(host):
+    config = get_config(host)
+
+    assert u'memory_limit => -1 => -1' in config
 
 def get_config(host):
     return host.run('php -i').stdout
