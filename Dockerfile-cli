@@ -5,6 +5,9 @@ RUN set -x \
     && addgroup -g 1000 app \
     && adduser -u 1000 -D -G app app
 
+# Temporary fix: pulls in the aports patch for https://bugs.alpinelinux.org/issues/10648
+RUN apk add --no-cache --upgrade apk-tools
+
 # Install docker help scripts
 COPY src/php/utils/docker/ /usr/local/bin/
 
