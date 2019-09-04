@@ -1,6 +1,6 @@
 server {
-    listen 80;
-    listen [::]:80;
+    listen ${NGINX_PORT};
+    listen [::]:${NGINX_PORT};
     server_name  ${NGINX_SERVER_NAME};
 
     root    ${NGINX_DOCUMENT_ROOT};

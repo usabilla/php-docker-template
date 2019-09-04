@@ -471,11 +471,11 @@ spec:
     metadata:
       annotations:
         prometheus.io/path: /metrics
-        prometheus.io/port: "80"
+        prometheus.io/port: "5556"
         prometheus.io/scrape: "true"
     spec:
       containers:
-      - image: usabillabv/php:7.3-cli-alpine3.9
+      - image: usabillabv/php:7.3-cli-alpine3.10
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /prometheus
@@ -483,8 +483,11 @@ spec:
       - image: usabillabv/php:prometheus-exporter-file1
         imagePullPolicy: IfNotPresent
         name: prometheus-exporter
+        env:
+        - name: NGINX_PORT
+          value: "5556"
         ports:
-        - containerPort: 80
+        - containerPort: 5556
           name: http
           protocol: TCP
         volumeMounts:
@@ -497,7 +500,7 @@ spec:
 ```
 
 In this example the PHP container *must* write down the metrics in the file `/prometheus/metrics`, the exporter container will have the same file mount at `/opt/project/public/metrics`.
-Which will then be available via http as `http://pod:80/metrics`, observe that the filename becomes the url which we configured the prometheus scrape to look for.
+Which will then be available via http as `http://pod:5556/metrics`, observe that the filename becomes the url which we configured the prometheus scrape to look for.
 
 ### Open Census
 
