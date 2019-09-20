@@ -6,6 +6,9 @@ if [ -z "$1" ] || [ "${1#-}" != "$1" ]; then
 	set -- php-fpm "$@"
 fi
 
+## From the environment variables replace the php-fpm configuration placeholders
+ESCAPE='$' envsubst < /usr/local/etc/php-fpm.d/zz-docker.conf.template > /usr/local/etc/php-fpm.d/zz-docker.conf
+
 if [ "$1" = php-fpm ]; then
     if env | grep -E "^KMS_ENCRYPTED"; then
         set -- shush exec -- "$@"

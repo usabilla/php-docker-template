@@ -1,6 +1,13 @@
 FROM php:7.2-fpm-alpine3.7 as fpm
 
 ENV FCGI_CONNECT=/var/run/php-fpm.sock
+ENV PHP_FPM_PM=dynamic
+ENV PHP_FPM_PM_MAX_CHILDREN=5
+ENV PHP_FPM_PM_START_SERVERS=2
+ENV PHP_FPM_PM_MIN_SPARE_SERVERS=1
+ENV PHP_FPM_PM_MAX_SPARE_SERVERS=3
+ENV PHP_FPM_PM_PROCESS_IDLE_TIMEOUT=10
+ENV PHP_FPM_PM_MAX_REQUESTS=0
 
 # Add usabilla user and group
 RUN set -x \
@@ -36,7 +43,7 @@ RUN ln -s $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
 
 COPY src/gpg /usr/local/etc/gpg
 COPY src/php/conf/ /usr/local/etc/php/conf.d/
-COPY src/php/fpm/conf/*.conf /usr/local/etc/php-fpm.d/
+COPY src/php/fpm/conf/*.conf.* /usr/local/etc/php-fpm.d/
 
 # Install shush, dumb-init and composer
 RUN install-shush && rm -f /usr/local/bin/install-shush \
