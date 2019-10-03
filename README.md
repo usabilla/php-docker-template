@@ -308,6 +308,37 @@ ENV NGINX_CORS_ALLOW_ORIGIN="https://my-domain.cool"
 
 ## For PHP customization
 
+### PHP-FPM Configuration
+
+To allow tuning the FPM pool, some pool directives are configurable via the following environment variables.
+For more information on these directives, see [the documentation](https://www.php.net/manual/en/install.fpm.configuration.php).
+
+| Directive               | Environment Variable            | Default |
+|-------------------------|---------------------------------|---------|
+| pm                      | PHP_FPM_PM                      | dynamic |
+| pm.max_children         | PHP_FPM_PM_MAX_CHILDREN         | 5       |
+| pm.start_servers        | PHP_FPM_PM_START_SERVERS        | 2       |
+| pm.min_spare_servers    | PHP_FPM_PM_MIN_SPARE_SERVERS    | 1       |
+| pm.max_spare_servers    | PHP_FPM_PM_MAX_SPARE_SERVERS    | 3       |
+| pm.process_idle_timeout | PHP_FPM_PM_PROCESS_IDLE_TIMEOUT | 10      |
+| pm.max_requests         | PHP_FPM_PM_MAX_REQUESTS         | 0       |
+
+An example Dockerfile with customized configuration might look like:
+
+```Dockerfile
+# syntax=docker/dockerfile:1.0.0-experimental
+
+FROM usabillabv/php:7.3-fpm-alpine3.10
+
+ENV PHP_FPM_PM="static"
+ENV PHP_FPM_PM_MAX_CHILDREN="70"
+ENV PHP_FPM_PM_START_SERVERS="10"
+ENV PHP_FPM_PM_MIN_SPARE_SERVERS="20"
+ENV PHP_FPM_PM_MAX_SPARE_SERVERS="40" 
+ENV PHP_FPM_PM_PROCESS_IDLE_TIMEOUT="35"
+ENV PHP_FPM_PM_MAX_REQUESTS="500"
+```
+
 ### PHP configuration
 
 The official PHP images ship with recommended
