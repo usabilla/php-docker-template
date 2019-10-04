@@ -37,7 +37,7 @@ build-fpm: clean-tags
 # Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
 build-http: clean-tags
-	./build-nginx.sh 1.17 nginx
+	./build-nginx.sh 1.17 nginx1 nginx
 	./build-nginx.sh 1.16
 	./build-nginx.sh 1.15
 	./build-nginx.sh 1.14
