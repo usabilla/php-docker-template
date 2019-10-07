@@ -5,7 +5,7 @@
 [![CircleCI](https://circleci.com/gh/usabilla/php-docker-template.svg?style=svg)](https://circleci.com/gh/usabilla/php-docker-template)
 [![Docker hub](https://img.shields.io/badge/Docker%20Hub-00a5c9.svg?logo=docker&style=flat&color=00a5c9&labelColor=00a5c9&logoColor=white)](https://hub.docker.com/r/usabillabv/php/)
 [![Docker hub](https://img.shields.io/docker/pulls/usabillabv/php.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
-[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.9.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
+[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.10.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
 [![Usabilla Feedback Button](.github/static/img/badge-usabilla-leave-us-feedback.png)](https://d6tizftlrpuof.cloudfront.net/live/i/4f03f8e795fb10233e000000/50db3123f698e9156665fa0fb1a914932de5a334.html?reset&project=php-docker-template&source=github)
 
 A series of Docker images to run PHP Applications on Usabilla Style
@@ -73,7 +73,7 @@ All images are based on their official variants, being:
 ## Alpine Linux situation
 
 Even though both of the images are based on the Alpine Linux, the PHP official repository gives us the option to choose
-between its versions, at this moment being `3.8` or `3.9`.
+between its versions, at this moment being `3.9` or `3.10`.
 
 Meanwhile on the official Nginx images we have no control over which Alpine version we use, this explains the tagging
 strategy coming in the next section.
@@ -89,9 +89,9 @@ In order to provide upgrade path we intend to keep one or more versions of PHP a
 The tag naming strategy consists of (Read as a regex):
 
 - PHP: `(phpMajor).(phpMinor)-(cli|fpm)-(alpine|future supported OSes)(alpineMajor).(alpineMinor)(-dev)?`
-  - Example: `7.2-fpm-alpine3.8`, `7.2-fpm-alpine3.8-dev`
+  - Example: `7.3-fpm-alpine3.10`, `7.3-fpm-alpine3.10-dev`
   - Note: The minor version might come followed by special versioning constraints in case of betas, etc. For instance
-   `7.3-rc-fpm-alpine3.8-dev`
+   `7.3-rc-fpm-alpine3.10-dev`
 - Nginx: `nginx(major).(minor)(-dev)?`
   - Example: `nginx1.15`, `nginx1.15-dev`
 
@@ -112,14 +112,14 @@ In this example adding PHP 7.3-rc for cli and fpm:
 
 ```diff
 build-cli: clean-tags
-    ./build-php.sh cli 7.2 3.7
-    ./build-php.sh cli 7.2 3.8
-+   ./build-php.sh cli 7.3-rc 3.8
+	./build-php.sh cli 7.3 3.9
+	./build-php.sh cli 7.3 3.10
++	./build-php.sh cli 7.3-rc 3.10
 
 build-fpm: clean-tags
-    ./build-php.sh fpm 7.2 3.7
-    ./build-php.sh fpm 7.2 3.8
-+   ./build-php.sh fpm 7.3-rc 3.8
+	./build-php.sh fpm 7.3 3.9
+	./build-php.sh fpm 7.3 3.10
++	./build-php.sh fpm 7.3-rc 3.10
 ```
 
 Being `./build-php.sh (cli/fpm) (PHP version) (Alpine version)`
@@ -179,7 +179,7 @@ Simply use the images as base of the application's `Dockerfile` and apply the ne
 ```Dockerfile
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.3-fpm-alpine3.9
+FROM usabillabv/php:7.3-fpm-alpine3.10
 ```
 
 In usual cases it might not be necessary to extend the nginx images, unless you desire to extend its behavior, for
@@ -411,7 +411,7 @@ Since [Xdebug](https://xdebug.org) is a common extension to be used we offer two
 
 ##### Dev image
 
-Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.9-dev`.
+Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.10-dev`.
 
 Not recommended if you're layering with your production images, using a different base image doesn't allow to you share
 cache among your Dockerfile targets.
@@ -528,7 +528,7 @@ empowers the `RUN` mounts and more, check its documentation
 # The base target will serve as initial layer for dev and prod images,
 # thus all necessary global configurations, extensions and modules
 # should be put here
-FROM usabillabv/php:7.3-fpm-alpine3.9 AS base
+FROM usabillabv/php:7.3-fpm-alpine3.10 AS base
 
 # When composer gets copied we want to make sure it's from the major version 1
 FROM composer:1 as composer
