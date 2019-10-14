@@ -2,6 +2,8 @@
 
 set -eEuo pipefail
 
+export DOCKER_BUILDKIT=1
+
 declare -r IMAGE="http"
 
 declare -r VERSION_NGINX=$1

@@ -2,6 +2,8 @@
 
 set -eEuo pipefail
 
+export DOCKER_BUILDKIT=1
+
 declare -r IMAGE="prometheus-exporter-file"
 
 declare -r DOCKER_FILE="http"
