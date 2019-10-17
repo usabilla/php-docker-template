@@ -50,6 +50,9 @@ RUN install-shush && rm -f /usr/local/bin/install-shush \
     && install-dumb-init && rm -f /usr/local/bin/install-dumb-init \
     && install-composer && rm -f /usr/local/bin/install-composer
 
+RUN composer global require hirak/prestissimo --ansi --no-progress \
+    && composer clear-cache
+
 STOPSIGNAL SIGTERM
 
 ENTRYPOINT [ "docker-php-entrypoint-init" ]
