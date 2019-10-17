@@ -11,6 +11,7 @@ def pytest_addoption(parser):
 def tag(request):
     return request.config.getoption("--tag")
 
+
 @pytest.fixture
 def container(host, tag, request):
     port = '80'
