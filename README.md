@@ -635,3 +635,4 @@ $ DOCKER_BUILDKIT=1 docker build -t "my-project-prod:latest" \
 ### Working example
 
 We also have a simple, but fully functional PHP FPM example, [check it here](docs/examples/hello-world-fpm).
+
