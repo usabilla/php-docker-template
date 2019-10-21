@@ -1,0 +1,12 @@
+name: Linting
+
+on: [push, pull_request]
+
+jobs:
+  styles:
+    runs-on: ubuntu-18.04
+    name: Linting
+    steps:
+      - uses: actions/checkout@master
+      - uses: actions/setup-python@v1
+      - uses: WhyNotHugo/python-linting@v1.0.0
