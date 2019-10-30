@@ -19,7 +19,6 @@ server {
         include /etc/nginx/location.d-enabled/*.conf;
         
         fastcgi_pass   unix:/var/run/php-fpm.sock;
-        fastcgi_split_path_info ^(.+\.php)(/.*)$;
 
         include        fastcgi_params;
 
