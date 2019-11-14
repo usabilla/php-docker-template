@@ -45,10 +45,9 @@ COPY src/gpg /usr/local/etc/gpg
 COPY src/php/conf/ /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf.* /usr/local/etc/php-fpm.d/
 
-# Install shush, dumb-init and composer
+# Install shush and dumb-init
 RUN install-shush && rm -f /usr/local/bin/install-shush \
-    && install-dumb-init && rm -f /usr/local/bin/install-dumb-init \
-    && install-composer && rm -f /usr/local/bin/install-composer
+    && install-dumb-init && rm -f /usr/local/bin/install-dumb-init
 
 STOPSIGNAL SIGTERM
 
@@ -64,6 +63,7 @@ VOLUME [ "/var/run" ]
 ## FPM-DEV STAGE ##
 FROM fpm as fpm-dev
 
-# Install Xdebug and development specific configuration
-RUN docker-php-dev-mode xdebug \
+# Install composer, Xdebug, and development specific configuration
+RUN install-composer && rm -f /usr/local/bin/install-composer \
+    && docker-php-dev-mode xdebug \
     && docker-php-dev-mode config

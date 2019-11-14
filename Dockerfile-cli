@@ -38,10 +38,6 @@ COPY src/php/cli/conf/*.ini /usr/local/etc/php/conf.d/
 COPY src/php/utils/install-shush /usr/local/bin/
 RUN install-shush && rm -rf /usr/local/bin/install-shush
 
-# Install composer
-COPY src/php/utils/install-composer /usr/local/bin/
-RUN install-composer && rm -rf /usr/local/bin/install-composer
-
 STOPSIGNAL SIGTERM
 
 ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
@@ -53,8 +49,10 @@ HEALTHCHECK NONE
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
 
-# Install Xdebug and development specific configuration
-RUN docker-php-dev-mode xdebug \
+# Install composer, Xdebug, and development specific configuration
+COPY src/php/utils/install-composer /usr/local/bin/
+RUN install-composer && rm -rf /usr/local/bin/install-composer \
+    && docker-php-dev-mode xdebug \
     && docker-php-dev-mode config
 
 # Change entrypoint back to the default because we don't need shush in development
