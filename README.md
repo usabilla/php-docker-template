@@ -5,7 +5,7 @@
 [![CircleCI](https://circleci.com/gh/usabilla/php-docker-template.svg?style=svg)](https://circleci.com/gh/usabilla/php-docker-template)
 [![Docker hub](https://img.shields.io/badge/Docker%20Hub-00a5c9.svg?logo=docker&style=flat&color=00a5c9&labelColor=00a5c9&logoColor=white)](https://hub.docker.com/r/usabillabv/php/)
 [![Docker hub](https://img.shields.io/docker/pulls/usabillabv/php.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
-[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.10.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
+[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.11.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
 [![Usabilla Feedback Button](.github/static/img/badge-usabilla-leave-us-feedback.png)](https://d6tizftlrpuof.cloudfront.net/live/i/4f03f8e795fb10233e000000/50db3123f698e9156665fa0fb1a914932de5a334.html?reset&project=php-docker-template&source=github)
 
 A series of Docker images to run PHP Applications on Usabilla Style
@@ -89,9 +89,9 @@ In order to provide upgrade path we intend to keep one or more versions of PHP a
 The tag naming strategy consists of (Read as a regex):
 
 - PHP: `(phpMajor).(phpMinor)-(cli|fpm)-(alpine|future supported OSes)(alpineMajor).(alpineMinor)(-dev)?`
-  - Example: `7.3-fpm-alpine3.10`, `7.3-fpm-alpine3.10-dev`
+  - Example: `7.3-fpm-alpine3.11`, `7.3-fpm-alpine3.11-dev`
   - Note: The minor version might come followed by special versioning constraints in case of betas, etc. For instance
-   `7.3-rc-fpm-alpine3.10-dev`
+   `7.3-rc-fpm-alpine3.11-dev`
 - Nginx: `nginx(major).(minor)(-dev)?`
   - Example: `nginx1.15`, `nginx1.15-dev`
 
@@ -179,7 +179,7 @@ Simply use the images as base of the application's `Dockerfile` and apply the ne
 ```Dockerfile
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.3-fpm-alpine3.10
+FROM usabillabv/php:7.3-fpm-alpine3.11
 ```
 
 In usual cases it might not be necessary to extend the nginx images, unless you desire to extend its behavior, for
@@ -328,7 +328,7 @@ An example Dockerfile with customized configuration might look like:
 ```Dockerfile
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.3-fpm-alpine3.10
+FROM usabillabv/php:7.3-fpm-alpine3.11
 
 ENV PHP_FPM_PM="static"
 ENV PHP_FPM_PM_MAX_CHILDREN="70"
@@ -442,7 +442,7 @@ Since [Xdebug](https://xdebug.org) is a common extension to be used we offer two
 
 ##### Dev image
 
-Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.10-dev`.
+Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.11-dev`.
 
 Not recommended if you're layering with your production images, using a different base image doesn't allow to you share
 cache among your Dockerfile targets.
@@ -506,7 +506,7 @@ spec:
         prometheus.io/scrape: "true"
     spec:
       containers:
-      - image: usabillabv/php:7.3-cli-alpine3.10
+      - image: usabillabv/php:7.3-cli-alpine3.11
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /prometheus
@@ -559,7 +559,7 @@ empowers the `RUN` mounts and more, check its documentation
 # The base target will serve as initial layer for dev and prod images,
 # thus all necessary global configurations, extensions and modules
 # should be put here
-FROM usabillabv/php:7.3-fpm-alpine3.10 AS base
+FROM usabillabv/php:7.3-fpm-alpine3.11 AS base
 
 # When composer gets copied we want to make sure it's from the major version 1
 FROM composer:1 as composer
