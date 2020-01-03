@@ -20,6 +20,7 @@ ENV NGINX_CLIENT_MAX_BODY_SIZE=1m
 ENV NGINX_LARGE_CLIENT_HEADER_BUFFERS="4 8k"
 ENV NGINX_CORS_ENABLE=false
 ENV NGINX_CORS_ALLOW_ORIGIN="*"
+ENV NGINX_FASTCGI_PASS="unix:/var/run/php-fpm.sock"
 
 # Patch gCVE-2019-11068 (libxslt)
 RUN apk upgrade --no-cache libxslt

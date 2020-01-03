@@ -18,7 +18,7 @@ server {
     location ~ \.php$ {
         include /etc/nginx/location.d-enabled/*.conf;
         
-        fastcgi_pass   unix:/var/run/php-fpm.sock;
+        fastcgi_pass   ${NGINX_FASTCGI_PASS};
 
         include        fastcgi_params;
 

@@ -306,6 +306,25 @@ It's also possible to customize the `Allow-Origin` but setting an environment va
 ENV NGINX_CORS_ALLOW_ORIGIN="https://my-domain.cool"
 ```
 
+## For Nginx <-> PHP communication customization
+
+By default Nginx and PHP communicate over a Unix socket for greater performance. But there are situations where you 
+want that communication to go over TCP instead. For example when you want to use the `listen.backlog` configuration 
+option of PHP FPM.
+
+To communicate over TCP set the following environment variables for FPM:
+
+```Dockerfile
+ENV ENV FCGI_CONNECT="localhost:9000"
+ENV ENV PHP_FPM_LISTEN_URI="0.0.0.0:9000"
+```
+
+And these for Nginx:
+
+```Dockerfile
+ENV ENV NGINX_FASTCGI_PASS="localhost:9000"
+```
+
 ## For PHP customization
 
 ### PHP-FPM Configuration

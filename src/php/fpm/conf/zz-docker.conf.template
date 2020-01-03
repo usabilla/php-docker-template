@@ -65,6 +65,10 @@ pm.process_idle_timeout = ${PHP_FPM_PM_PROCESS_IDLE_TIMEOUT}
 ; Default Value: 0
 pm.max_requests = ${PHP_FPM_PM_MAX_REQUESTS}
 
+; Set listen(2) backlog.
+; Default Value: 511 (-1 on FreeBSD and OpenBSD)
+listen.backlog = ${PHP_FPM_LISTEN_BACKLOG}
+
 user = app
 group = app
 
@@ -73,7 +77,7 @@ clear_env = no
 ; Ensure worker stdout and stderr are sent to the main error log.
 catch_workers_output = yes
 
-listen = /var/run/php-fpm.sock
+listen = ${PHP_FPM_LISTEN_URI}
 listen.owner = app
 listen.group = app
 listen.mode = 0666
