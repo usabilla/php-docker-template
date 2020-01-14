@@ -1,5 +1,7 @@
 FROM php:7.2-fpm-alpine3.7 as fpm
 
+RUN rm /usr/local/etc/php-fpm.d/*.conf
+
 ENV FCGI_CONNECT=/var/run/php-fpm.sock
 ENV PHP_FPM_PM=dynamic
 ENV PHP_FPM_PM_MAX_CHILDREN=5
