@@ -2,30 +2,39 @@ import pytest
 
 @pytest.mark.php
 def test_php_images_contain_helper_scripts(host):
-    helper_scripts = [
-        "/usr/local/bin/docker-php-source-tarball",
-        "/usr/local/bin/docker-php-source",
-        "/usr/local/bin/docker-php-ext-install",
-        "/usr/local/bin/docker-php-ext-enable",
+    official_helper_scripts = [
+        "/usr/local/bin/docker-php-entrypoint",
         "/usr/local/bin/docker-php-ext-configure",
+        "/usr/local/bin/docker-php-ext-enable",
+        "/usr/local/bin/docker-php-ext-install",
+        "/usr/local/bin/docker-php-source",
+    ]
+
+    for file in official_helper_scripts:
+        assert host.file(file).exists is True
+        assert host.file(file).is_file is True
+        assert host.file(file).mode == 0o775
+
+    helper_scripts = [
+        "/usr/local/bin/docker-php-dev-mode",
+        "/usr/local/bin/docker-php-entrypoint-init",
         "/usr/local/bin/docker-php-ext-pdo-pgsql",
         "/usr/local/bin/docker-php-ext-rdkafka",
-        "/usr/local/bin/docker-php-entrypoint",
-        "/usr/local/bin/docker-php-entrypoint-init",
+        "/usr/local/bin/docker-php-source-tarball",
         "/usr/local/bin/php-fpm-healthcheck",
     ]
 
     for file in helper_scripts:
         assert host.file(file).exists is True
         assert host.file(file).is_file is True
-        assert host.file(file).mode == 0o775
+        assert host.file(file).mode == 0o755
 
 @pytest.mark.php_dev
 def test_php_images_contain_dev_helper_scripts(host):
     file = host.file('/usr/local/bin/docker-php-dev-mode')
 
     assert file.is_file is True
-    assert file.mode == 0o775
+    assert file.mode == 0o755
 
 @pytest.mark.php
 def test_php_source_tarball_script(host):
