@@ -16,7 +16,8 @@ declare TEST_SUITE
 if [[ $DOCKER_TAG == *"-dev" ]]; then
     TEST_SUITE="php or php_fpm or php_dev"
 else
-    TEST_SUITE="php or php_fpm or php_fpm_exec or php_no_dev and not php_dev"
+    VERSION_SUITE=$(echo "${DOCKER_TAG}" | grep -P ':\d.\d-' -o | sed 's/[^0-9]*//g')
+    TEST_SUITE="php or php_fpm or php_fpm_exec or php_fpm_exec_${VERSION_SUITE} or php_no_dev and not php_dev"
 fi
 
 printf "Starting a container for '%s'\\n" "$DOCKER_TAG"
