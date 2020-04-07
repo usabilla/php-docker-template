@@ -219,11 +219,15 @@ jobs:
       - store_artifacts:
           path: ./tmp/clair
   build-http:
-    machine: true
+    docker:
+      - image: docker:18.09
     steps:
+      - run: apk add bash make
       - checkout
+      - setup_remote_docker:
+          version: 18.09.3
       - run: make build-http
-      - run: cat ./tmp/build-http.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 1}}' %
+      - run: cat ./tmp/build-http.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 1}}' %
       - run: docker save usabillabv/php -o ./tmp/usabillabv_php-http.tar
       - persist_to_workspace:
           root: ./tmp
@@ -231,11 +235,15 @@ jobs:
             - usabillabv_php-http.tar
             - build-http.tags
   build-prometheus-exporter-file:
-    machine: true
+    docker:
+      - image: docker:18.09
     steps:
+      - run: apk add bash make
       - checkout
+      - setup_remote_docker:
+          version: 18.09.3
       - run: make build-prometheus-exporter-file
-      - run: cat ./tmp/build-prometheus-exporter-file.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 1}}' %
+      - run: cat ./tmp/build-prometheus-exporter-file.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 1}}' %
       - run: docker save usabillabv/php -o ./tmp/usabillabv_php-prometheus-exporter-file.tar
       - persist_to_workspace:
           root: ./tmp
@@ -243,11 +251,15 @@ jobs:
             - usabillabv_php-prometheus-exporter-file.tar
             - build-prometheus-exporter-file.tags
   build-fpm:
-    machine: true
+    docker:
+      - image: docker:18.09
     steps:
+      - run: apk add bash make
       - checkout
+      - setup_remote_docker:
+          version: 18.09.3
       - run: make build-fpm
-      - run: cat ./tmp/build-fpm.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 8}}' %
+      - run: cat ./tmp/build-fpm.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 8}}' %
       - run: docker save usabillabv/php -o ./tmp/usabillabv_php-fpm.tar
       - persist_to_workspace:
           root: ./tmp
@@ -255,11 +267,15 @@ jobs:
             - usabillabv_php-fpm.tar
             - build-fpm.tags
   build-cli:
-    machine: true
+    docker:
+      - image: docker:18.09
     steps:
+      - run: apk add bash make
       - checkout
+      - setup_remote_docker:
+          version: 18.09.3
       - run: make build-cli
-      - run: cat ./tmp/build-cli.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .ContainerConfig.Env 7}}' %
+      - run: cat ./tmp/build-cli.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
       - run: docker save usabillabv/php -o ./tmp/usabillabv_php-cli.tar
       - persist_to_workspace:
           root: ./tmp
