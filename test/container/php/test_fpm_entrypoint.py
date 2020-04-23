@@ -12,6 +12,40 @@ def test_php_fpm_exec_has_dumb_init(host):
 
     assert "shush" not in php_fpm_exec.stdout
 
+@pytest.mark.php_fpm_exec
+def test_php_fpm_default_config(host):
+    config_docker = host.file(
+        "/usr/local/etc/php-fpm.d/zz-docker.conf")
+
+    assert config_docker.exists is True
+    assert config_docker.is_file is True
+
+    # Remove our custom configuration config in order to check
+    # the upstream default configuration
+    host.run("mv /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf.unused")
+
+    config_effective = host.run("php-fpm -tt").stderr
+
+    assert "access.log = /proc/self/fd/2" in config_effective
+    assert "error_log = /proc/self/fd/2" in config_effective
+    assert "clear_env = no" in config_effective
+    assert "catch_workers_output = yes" in config_effective
+
+    host.run("mv /usr/local/etc/php-fpm.d/zz-docker.conf.unused /usr/local/etc/php-fpm.d/zz-docker.conf")
+
+@pytest.mark.php_fpm_exec_73
+@pytest.mark.php_fpm_exec_74
+def test_php_fpm_default_config_modern(host):
+    # Remove our custom configuration config in order to check
+    # the upstream default configuration
+    host.run("mv /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/zz-docker.conf.unused")
+
+    config_effective = host.run("php-fpm -tt").stderr
+
+    assert "log_limit = 8192" in config_effective
+    assert "decorate_workers_output = no" in config_effective
+
+    host.run("mv /usr/local/etc/php-fpm.d/zz-docker.conf.unused /usr/local/etc/php-fpm.d/zz-docker.conf")
 
 @pytest.mark.php_fpm_exec
 def test_php_fpm_templates_config_file(host):

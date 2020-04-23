@@ -46,10 +46,13 @@ COPY src/gpg /usr/local/etc/gpg
 COPY src/php/conf/ /usr/local/etc/php/conf.d/
 COPY src/php/fpm/conf/*.conf.* /usr/local/etc/php-fpm.d/
 
+# Remove configuration files which are templated during the entrypoint command
+RUN rm /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/www.conf.default
+
 # Install shush, dumb-init and composer
 RUN install-shush && rm -f /usr/local/bin/install-shush \
     && install-dumb-init && rm -f /usr/local/bin/install-dumb-init \
-    && install-composer && rm -f /usr/local/bin/install-composer \
+    && install-composer && rm -f /usr/local/bin/install-composer
 
 STOPSIGNAL SIGTERM
 

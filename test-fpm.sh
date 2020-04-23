@@ -16,7 +16,8 @@ declare TEST_SUITE
 if [[ $DOCKER_TAG == *"-dev" ]]; then
     TEST_SUITE="php or php_fpm or php_dev"
 else
-    TEST_SUITE="php or php_fpm or php_fpm_exec or php_no_dev and not php_dev"
+    VERSION_SUITE=$(echo "${DOCKER_TAG}" | grep -P ':\d.\d-' -o | sed 's/[^0-9]*//g')
+    TEST_SUITE="php or php_fpm or php_fpm_exec or php_fpm_exec_${VERSION_SUITE} or php_no_dev and not php_dev"
 fi
 
 printf "Starting a container for '%s'\\n" "$DOCKER_TAG"
@@ -36,6 +37,6 @@ docker run --rm -t \
     -v "$(pwd)/test:/tests" \
     -v "$(pwd)/tmp/test-results:/results" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    renatomefi/docker-testinfra:2 \
+    renatomefi/docker-testinfra:5 \
     -m "$TEST_SUITE" --junitxml="/results/php-fpm-$DOCKER_TAG.xml" \
     --verbose --hosts="docker://$DOCKER_CONTAINER"
