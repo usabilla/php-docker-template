@@ -79,3 +79,6 @@ listen.group = app
 listen.mode = 0666
 
 pm.status_path = /status
+
+; Use default logging format, but made configurable
+access.format = "${PHP_FPM_ACCESS_FORMAT}"

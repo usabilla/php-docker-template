@@ -313,15 +313,16 @@ ENV NGINX_CORS_ALLOW_ORIGIN="https://my-domain.cool"
 To allow tuning the FPM pool, some pool directives are configurable via the following environment variables.
 For more information on these directives, see [the documentation](https://www.php.net/manual/en/install.fpm.configuration.php).
 
-| Directive               | Environment Variable            | Default |
-|-------------------------|---------------------------------|---------|
-| pm                      | PHP_FPM_PM                      | dynamic |
-| pm.max_children         | PHP_FPM_PM_MAX_CHILDREN         | 5       |
-| pm.start_servers        | PHP_FPM_PM_START_SERVERS        | 2       |
-| pm.min_spare_servers    | PHP_FPM_PM_MIN_SPARE_SERVERS    | 1       |
-| pm.max_spare_servers    | PHP_FPM_PM_MAX_SPARE_SERVERS    | 3       |
-| pm.process_idle_timeout | PHP_FPM_PM_PROCESS_IDLE_TIMEOUT | 10      |
-| pm.max_requests         | PHP_FPM_PM_MAX_REQUESTS         | 0       |
+| Directive               | Environment Variable            | Default                 |
+|-------------------------|---------------------------------|-------------------------|
+| pm                      | PHP_FPM_PM                      | dynamic                 |
+| pm.max_children         | PHP_FPM_PM_MAX_CHILDREN         | 5                       |
+| pm.start_servers        | PHP_FPM_PM_START_SERVERS        | 2                       |
+| pm.min_spare_servers    | PHP_FPM_PM_MIN_SPARE_SERVERS    | 1                       |
+| pm.max_spare_servers    | PHP_FPM_PM_MAX_SPARE_SERVERS    | 3                       |
+| pm.process_idle_timeout | PHP_FPM_PM_PROCESS_IDLE_TIMEOUT | 10                      |
+| pm.max_requests         | PHP_FPM_PM_MAX_REQUESTS         | 0                       |
+| access.format           | PHP_FPM_ACCESS_FORMAT           | %R - %u %t \"%m %r\" %s |
 
 An example Dockerfile with customized configuration might look like:
 
@@ -337,6 +338,7 @@ ENV PHP_FPM_PM_MIN_SPARE_SERVERS="20"
 ENV PHP_FPM_PM_MAX_SPARE_SERVERS="40" 
 ENV PHP_FPM_PM_PROCESS_IDLE_TIMEOUT="35"
 ENV PHP_FPM_PM_MAX_REQUESTS="500"
+ENV PHP_FPM_ACCESS_FORMAT {\\\"cpu_usage\\\":%C,\\\"memory_usage\\\":%M,\\\"duration_microsecond\\\":%d,\\\"script\\\":\\\"%f\\\",\\\"content_length\\\":%l,\\\"request_method\\\":\\\"%m\\\",\\\"pool_name\\\":\\\"%n\\\",\\\"process_id\\\":\\\"%p\\\",\\\"request_query_string\\\":\\\"%q\\\",\\\"request_uri_query_string_glue\\\":\\\"%Q\\\",\\\"request_uri\\\":\\\"%r\\\",\\\"request_url\\\":\\\"%r%Q%q\\\",\\\"remote_ip_address\\\":\\\"%R\\\",\\\"response_status_code\\\":%s,\\\"time\\\":\\\"%t\\\",\\\"remote_user\\\":\\\"%u\\\"}
 ```
 
 ### PHP configuration
