@@ -36,6 +36,6 @@ docker run --rm -t \
     -v "$(pwd)/test:/tests" \
     -v "$(pwd)/tmp/test-results:/results" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    renatomefi/docker-testinfra:2 \
+    renatomefi/docker-testinfra:5 \
     -m "$TEST_SUITE" --junitxml="/results/php-cli-$DOCKER_TAG.xml" \
     --verbose --hosts="docker://$DOCKER_CONTAINER"
