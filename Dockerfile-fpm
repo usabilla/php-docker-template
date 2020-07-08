@@ -28,8 +28,7 @@ RUN set -x \
     && apk add --no-cache wget gettext \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install opcache \
-    && pecl install apcu \
-    && pecl clear-cache \
+    && pickle install apcu \
     && docker-php-ext-enable apcu \
     # those deletions happen since the helper scripts nor the official image are removing them
     && docker-php-source-tarball clean && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \

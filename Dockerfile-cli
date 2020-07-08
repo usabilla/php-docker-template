@@ -12,20 +12,22 @@ RUN apk add --no-cache --upgrade apk-tools
 # Install docker help scripts
 COPY src/php/utils/docker/ /usr/local/bin/
 
+# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
+RUN apk upgrade --no-cache curl libxml2 libxslt
+
 # Install PHP extensions
 RUN set -x \
-    && apk add --no-cache wget \
+    && apk add --no-cache wget libzip-dev \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
+    && curl --location --output /usr/local/bin/pickle https://github.com/FriendsOfPHP/pickle/releases/download/v0.6.0/pickle.phar \
+    && chmod +x /usr/local/bin/pickle \
+    && docker-php-ext-install zip \
     && docker-php-ext-install pcntl opcache \
-    && pecl install apcu \
-    && pecl clear-cache \
+    && pickle --no-interaction install apcu \
     && docker-php-ext-enable apcu \
     # Removing all PHP leftovers since the helper scripts nor the official image are removing them
     && docker-php-source-tarball clean && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps
-
-# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
-RUN apk upgrade --no-cache curl libxml2 libxslt
 
 # Create a symlink to the recommended production configuration
 # ref: https://github.com/docker-library/docs/tree/master/php#configuration
@@ -41,7 +43,7 @@ RUN install-shush && rm -rf /usr/local/bin/install-shush
 
 # Install composer
 COPY src/php/utils/install-composer /usr/local/bin/
-RUN install-composer && rm -rf /usr/local/bin/install-composer \
+RUN install-composer && rm -rf /usr/local/bin/install-composer
 
 STOPSIGNAL SIGTERM
 

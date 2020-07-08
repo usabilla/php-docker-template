@@ -65,10 +65,10 @@ def test_php_fpm_status_is_enabled(host):
     assert health_check.rc == 0
     assert "pool:" in health_check.stdout
 
-@pytest.mark.php
-def test_php_extension_script_for_rdkafka(host):
-    host.run_expect([0], "docker-php-ext-rdkafka")
-    assert 'rdkafka' in host.run('php -m').stdout
+# @pytest.mark.php
+# def test_php_extension_script_for_rdkafka(host):
+#     host.run_expect([0], "docker-php-ext-rdkafka")
+#     assert 'rdkafka' in host.run('php -m').stdout
 
 @pytest.mark.php
 def test_php_extension_script_for_pdo_pgsql(host):

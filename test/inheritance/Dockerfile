@@ -11,8 +11,7 @@ FROM usabillabv/php:7.3-cli-alpine3.10 as compile-php-pecl-extension
 
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
-    && pecl install xdebug \
+    && pickle install xdebug \
     && docker-php-ext-enable xdebug \
-    && pecl clear-cache \
     && docker-php-source-tarball clean \
     && apk del .phpize-deps

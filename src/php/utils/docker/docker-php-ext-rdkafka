@@ -6,7 +6,7 @@ set -xe
 apk add --no-cache --virtual .build-deps $PHPIZE_DEPS
 apk add --no-cache librdkafka-dev
 
-pecl install rdkafka
+pickle --no-interaction install rdkafka
 
 docker-php-ext-enable rdkafka
 
