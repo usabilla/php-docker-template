@@ -29,7 +29,7 @@ case "$1" in
 			exit 1
 		fi
 
-		pecl install xdebug-beta
+		pecl install xdebug-stable
 		docker-php-ext-enable xdebug
 		apk del $apkDel
 
