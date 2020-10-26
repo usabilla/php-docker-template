@@ -45,10 +45,10 @@ build-fpm: clean-tags
 # Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
 build-http: clean-tags
-	./build-nginx.sh 1.17 nginx1 nginx
-	./build-nginx.sh 1.16
-	./build-nginx.sh 1.15
-	./build-nginx.sh 1.14
+	./build-http.sh 1.17 nginx1 nginx
+	./build-http.sh 1.16
+	./build-http.sh 1.15
+	./build-http.sh 1.14
 
 # Docker Prometheus Exporter file images build matrix ./build-prometheus-exporter-file.sh (nginx version) (extra tag)
 # Adding arbitrary version 1.0 in order to make sure if we break compatibility we have to up it
