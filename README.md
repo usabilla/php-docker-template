@@ -108,18 +108,18 @@ your new changes you can see the `(BUILD).tags` file in the `tmp` directory.
 
 ### PHP
 
-In this example adding PHP 7.3-rc for cli and fpm:
+In this example adding PHP 7.4-rc for cli and fpm:
 
 ```diff
 build-cli: clean-tags
-	./build-php.sh cli 7.3 3.9
-	./build-php.sh cli 7.3 3.10
-+	./build-php.sh cli 7.3-rc 3.10
+	./build-php.sh cli 7.4 3.10
+	./build-php.sh cli 7.4 3.11
++	./build-php.sh cli 7.4-rc 3.12
 
 build-fpm: clean-tags
-	./build-php.sh fpm 7.3 3.9
-	./build-php.sh fpm 7.3 3.10
-+	./build-php.sh fpm 7.3-rc 3.10
+	./build-php.sh fpm 7.4 3.10
+	./build-php.sh fpm 7.4 3.11
++	./build-php.sh fpm 7.4-rc 3.12
 ```
 
 Being `./build-php.sh (cli/fpm) (PHP version) (Alpine version)`
@@ -179,7 +179,7 @@ Simply use the images as base of the application's `Dockerfile` and apply the ne
 ```Dockerfile
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.3-fpm-alpine3.11
+FROM usabillabv/php:7.4-fpm-alpine3.12
 ```
 
 In usual cases it might not be necessary to extend the nginx images, unless you desire to extend its behavior, for
