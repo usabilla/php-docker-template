@@ -41,7 +41,7 @@ RUN install-shush && rm -rf /usr/local/bin/install-shush
 
 # Install composer
 COPY src/php/utils/install-composer /usr/local/bin/
-RUN install-composer && rm -rf /usr/local/bin/install-composer \
+RUN install-composer && rm -rf /usr/local/bin/install-composer
 
 STOPSIGNAL SIGTERM
 
