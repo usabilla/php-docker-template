@@ -1,4 +1,4 @@
-FROM usabillabv/php:7.3-cli-alpine3.10 as compile-php-extension
+FROM 644152709166.dkr.ecr.eu-west-1.amazonaws.com/usabilla/dev/dockerhub-mirror/usabillabv/php:7.3-cli-alpine3.10 as compile-php-extension
 
 RUN set -x \
     && apk add --no-cache gnupg postgresql-client postgresql-dev \
@@ -7,7 +7,7 @@ RUN set -x \
     && docker-php-source-tarball clean \
     && apk del gnupg postgresql-dev
 
-FROM usabillabv/php:7.3-cli-alpine3.10 as compile-php-pecl-extension
+FROM 644152709166.dkr.ecr.eu-west-1.amazonaws.com/usabilla/dev/dockerhub-mirror/usabillabv/php:7.3-cli-alpine3.10 as compile-php-pecl-extension
 
 RUN set -x \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \

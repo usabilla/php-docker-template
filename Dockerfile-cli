@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:experimental
-FROM php:7.2-cli-alpine3.7 as cli
+FROM 644152709166.dkr.ecr.eu-west-1.amazonaws.com/usabilla/dev/dockerhub-mirror/php:7.2-cli-alpine3.7 as cli
 
 # Add usabilla user and group
 RUN set -x \
@@ -52,7 +52,7 @@ ENTRYPOINT ["/usr/local/bin/shush", "exec", "docker-php-entrypoint"]
 HEALTHCHECK NONE
 
 ## CLI-DEV STAGE ##
-FROM cli as cli-dev
+FROM 644152709166.dkr.ecr.eu-west-1.amazonaws.com/usabilla/dev/dockerhub-mirror/cli as cli-dev
 
 # Install Xdebug and development specific configuration
 RUN docker-php-dev-mode xdebug \

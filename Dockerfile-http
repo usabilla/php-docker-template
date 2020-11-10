@@ -1,4 +1,4 @@
-FROM nginx:1.15-alpine as http
+FROM 644152709166.dkr.ecr.eu-west-1.amazonaws.com/usabilla/dev/dockerhub-mirror/nginx:1.15-alpine as http
 
 # Add usabilla user and group
 RUN set -x \
@@ -37,6 +37,6 @@ CMD ["docker-nginx-entrypoint"]
 # this can be overriden in the child images
 HEALTHCHECK NONE
 
-FROM http as http-dev
+FROM 644152709166.dkr.ecr.eu-west-1.amazonaws.com/usabilla/dev/dockerhub-mirror/http as http-dev
 
 ENV NGINX_EXPOSE_VERSION=on
