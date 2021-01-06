@@ -476,6 +476,34 @@ Both are enabled via the helper script, by running
 $ docker-php-dev-mode config
 ```
 
+##### Setting up Xdebug
+
+Xdebug 3 comes with new mechanism to enable it's functionalities. The most notable, is the introduction of the 
+`xdebug.mode` setting, which controls which features are enabled. It can be specified via `.ini` files or by using the 
+environment variable `XDEBUG_MODE`. To learn more about the different modes in which Xdebug can be configured, please 
+refer to the [Xdebug settings guide](https://xdebug.org/docs/all_settings#mode).
+
+##### Notable changes from Xdebug 2
+
+With the introduction of the Xdebug mode in the v3 release, it is now mandatory to specify either `xdebug.mode=coverage` setting in .ini 
+file, or `XDEBUG_MODE=coverage` as environment variable, to use the code coverage analysis features. This impacts tools 
+like mutation tests.
+
+We recommend setting the XDEBUG_MODE when booting up a new container. Here's an example on how it could look like:
+
+```shell
+docker run -it \
+  -e XDEBUG_MODE=coverage \
+  -v "<HOST_PATH>:<CONTAINER_PATH>" \
+  usabillabv/php:7.4-cli-alpine3.12-dev \
+  vendor/bin/infection --test-framework-options='--testsuite=unit' -s --threads=12 --min-msi=100 --min-covered-msi=100
+```
+
+Another notable change, is the Xdebug port change. The default port is now `9003` instead of `9000`. Check your IDE 
+settings to confirm the correct port is specified. 
+
+For the full upgrade guide, please refer to the [official upgrade guide](https://xdebug.org/docs/upgrade_guide).
+
 ## Prometheus Exporter
 
 In order to monitor applications many systems implement Prometheus to expose metrics, one challenge specially in PHP is how to expose those to Prometheus without having to, either implement an endpoint in our application, or add HTTP and an endpoint for non-interactive containers.
