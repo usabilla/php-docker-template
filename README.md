@@ -30,6 +30,10 @@ A series of Docker images to run PHP Applications on Usabilla Style
 
 This project adheres to ADRs, a [list can be found here](docs/adr/).
 
+## Version Support Policy
+
+Our policy on versions we support [is outlined in ADR0005](docs/adr/0005-define-a-policy-for-supported-versions-and-upgrades.md).
+
 ## Basic architecture
 
 All being based on the official images we provide:
