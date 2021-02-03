@@ -21,7 +21,7 @@ jobs:
         name: Generate Alpine
         shell: bash
         run: |
-          echo "::set-output name=versions::[\"3.12\", \"3.11\", \"3.10\"]"
+          echo "::set-output name=versions::[\"3.13\", \"3.12\"]"
   supported-nginx-versions:
     name: Supported nginx versions
     runs-on: ubuntu-latest
@@ -43,7 +43,7 @@ jobs:
         name: Generate PHP
         shell: bash
         run: |
-          echo "::set-output name=versions::[\"7.4\", \"7.3\", \"7.2\"]"
+          echo "::set-output name=versions::[\"8.0\", \"7.4\", \"7.3\"]"
   php-type-matrix:
     name: PHP Type Matrix
     runs-on: ubuntu-latest

@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:experimental
+FROM composer:2 as composer
 FROM php:7.2-cli-alpine3.7 as cli
 
 # Add usabilla user and group
@@ -8,6 +9,8 @@ RUN set -x \
 
 # Temporary fix: pulls in the aports patch for https://bugs.alpinelinux.org/issues/10648
 RUN apk add --no-cache --upgrade apk-tools
+
+RUN wget http://pear.php.net/go-pear.phar && php go-pear.phar
 
 # Install docker help scripts
 COPY src/php/utils/docker/ /usr/local/bin/
@@ -40,8 +43,8 @@ COPY src/php/utils/install-shush /usr/local/bin/
 RUN install-shush && rm -rf /usr/local/bin/install-shush
 
 # Install composer
-COPY src/php/utils/install-composer /usr/local/bin/
-RUN install-composer && rm -rf /usr/local/bin/install-composer
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+ENV COMPOSER_HOME=/opt/.composer
 
 STOPSIGNAL SIGTERM
 
@@ -53,6 +56,8 @@ HEALTHCHECK NONE
 
 ## CLI-DEV STAGE ##
 FROM cli as cli-dev
+
+RUN apk add --no-cache git
 
 # Install Xdebug and development specific configuration
 RUN docker-php-dev-mode xdebug \
