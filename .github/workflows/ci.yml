@@ -204,7 +204,7 @@ jobs:
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
       - run: mkdir -p "./clair/${DOCKER_IMAGE}"
-      - run: make scan-vulnerability
+      - run: make ci-scan-vulnerability
   scan-vulnerability-http:
     name: Scan nginx ${{ matrix.nginx }} for vulnerabilities
     needs:
@@ -233,7 +233,7 @@ jobs:
         shell: bash
       - run: mkdir -p "./clair/${DOCKER_IMAGE}"
         shell: bash
-      - run: make scan-vulnerability
+      - run: make ci-scan-vulnerability
         shell: bash
   scan-vulnerability-prometheus-exporter-file:
     name: Scan HTTP prometheus-exporter-file for vulnerabilities
@@ -258,7 +258,7 @@ jobs:
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
       - run: mkdir -p "./clair/${DOCKER_IMAGE}"
-      - run: make scan-vulnerability
+      - run: make ci-scan-vulnerability
   test-php:
     name: Functionaly test PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }}
     needs:
