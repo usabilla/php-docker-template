@@ -24,5 +24,6 @@ server {
 
         fastcgi_param SCRIPT_FILENAME ${ESCAPE}document_root${ESCAPE}fastcgi_script_name;
         fastcgi_param DOCUMENT_ROOT ${ESCAPE}document_root;
+        fastcgi_read_timeout ${NGINX_FCGI_READ_TIMEOUT};
     }
 }
