@@ -15,7 +15,7 @@ def test_nginx_sigterm_handling(host, container):
 
     logs = host.run('docker logs {}'.format(container))
 
-    assert u'signal 15 (SIGTERM) received, exiting' in logs.stderr
+    assert u'signal 3 (SIGQUIT) received, shutting down' in logs.stderr
     assert u'exit' in logs.stderr
 
 

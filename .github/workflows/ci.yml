@@ -31,8 +31,8 @@ jobs:
       - id: supported-nginx-versions
         name: Generate nginx
         shell: bash
-        run: | # The "1.17-nginx1-nginx" in here will be changed to "1.17 nginx1 nginx" when calling ./build-http.sh
-          echo "::set-output name=versions::[\"1.17-nginx1-nginx\", \"1.16\", \"1.15\", \"1.14\"]"
+        run: | # The "1.19-nginx1-nginx" in here will be changed to "1.19 nginx1 nginx" when calling ./build-http.sh
+          echo "::set-output name=versions::[\"1.19-nginx1-nginx\", \"1.18\"]"
   supported-php-versions:
     name: Supported PHP versions
     runs-on: ubuntu-latest
