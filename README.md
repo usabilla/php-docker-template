@@ -2,7 +2,7 @@
 
 [![Usabilla Logo](https://usabilla.com/img/usabilla-logo-circle.svg)](https://usabilla.com/)
 
-[![CircleCI](https://circleci.com/gh/usabilla/php-docker-template.svg?style=svg)](https://circleci.com/gh/usabilla/php-docker-template)
+[![Continuous Integration](https://github.com/usabilla/php-docker-template/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/usabilla/php-docker-template/actions/workflows/ci.yml)
 [![Docker hub](https://img.shields.io/badge/Docker%20Hub-00a5c9.svg?logo=docker&style=flat&color=00a5c9&labelColor=00a5c9&logoColor=white)](https://hub.docker.com/r/usabillabv/php/)
 [![Docker hub](https://img.shields.io/docker/pulls/usabillabv/php.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
 [![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.11.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
