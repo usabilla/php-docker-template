@@ -21,7 +21,7 @@ jobs:
         name: Generate Alpine
         shell: bash
         run: |
-          echo "::set-output name=versions::[\"3.12\", \"3.11\", \"3.10\"]"
+          echo "::set-output name=versions::[\"3.13\", \"3.12\", \"3.11\", \"3.10\"]"
   supported-nginx-versions:
     name: Supported nginx versions
     runs-on: ubuntu-latest
