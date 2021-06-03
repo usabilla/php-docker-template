@@ -161,6 +161,13 @@ jobs:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
+        include:
+          - php: "7.1"
+            alpine: "3.10"
+            type: cli
+          - php: "7.1"
+            alpine: "3.10"
+            type: fpm
     steps:
       - uses: actions/checkout@v2
       - run: ./build-php.sh ${{ matrix.type }} ${{ matrix.php }} ${{ matrix.alpine }}
@@ -190,6 +197,13 @@ jobs:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
+        include:
+          - php: "7.1"
+            alpine: "3.10"
+            type: cli
+          - php: "7.1"
+            alpine: "3.10"
+            type: fpm
     steps:
       - uses: actions/checkout@v2
       - name: Install clair-scanner
@@ -275,6 +289,13 @@ jobs:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
+        include:
+          - php: "7.1"
+            alpine: "3.10"
+            type: cli
+          - php: "7.1"
+            alpine: "3.10"
+            type: fpm
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
@@ -424,6 +445,13 @@ jobs:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
+        include:
+          - php: "7.1"
+            alpine: "3.10"
+            type: cli
+          - php: "7.1"
+            alpine: "3.10"
+            type: fpm
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
