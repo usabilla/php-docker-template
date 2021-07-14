@@ -4,6 +4,9 @@ import requests
 
 @pytest.mark.prometheus_exporter_file_e2e
 def test_prometheus_exporter_file_propagates_content_type_text(host, container):
+    sleep = host.run('sleep 1')
+    assert sleep.rc is 0
+
     nginx_port = host.check_output("docker inspect " + container + " --format '{{ (index (index .NetworkSettings.Ports \"80/tcp\") 0).HostPort }}'")
 
     req_root = requests.get("http://localhost:{}/".format(nginx_port))
@@ -21,6 +24,9 @@ def test_prometheus_exporter_file_propagates_content_type_text(host, container):
 
 @pytest.mark.prometheus_exporter_file_e2e
 def test_prometheus_exporter_file_propagates_content_type_json(host, container):
+    sleep = host.run('sleep 1')
+    assert sleep.rc is 0
+
     nginx_port = host.check_output("docker inspect " + container + " --format '{{ (index (index .NetworkSettings.Ports \"80/tcp\") 0).HostPort }}'")
 
     req_root = requests.get("http://localhost:{}/".format(nginx_port))
