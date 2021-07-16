@@ -25,12 +25,15 @@ COPY src/php/utils/install-* /usr/local/bin/
 
 # Install PHP extensions
 RUN set -x \
-    && apk add --no-cache wget gettext \
+    # Adding sodium purely for the 7.1 image, it's already in 7.2 and up: https://www.php.net/manual/en/sodium.installation.php
+    && apk add --no-cache libsodium-dev wget gettext \
     && apk add --no-cache --virtual .phpize-deps $PHPIZE_DEPS \
     && docker-php-ext-install opcache \
     && pecl install apcu \
+    && pecl install libsodium \
     && pecl clear-cache \
     && docker-php-ext-enable apcu \
+    && docker-php-ext-enable sodium \
     # those deletions happen since the helper scripts nor the official image are removing them
     && docker-php-source-tarball clean && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps \
