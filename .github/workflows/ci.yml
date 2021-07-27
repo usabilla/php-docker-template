@@ -168,6 +168,12 @@ jobs:
           - php: "7.1"
             alpine: "3.10"
             type: fpm
+          - php: "8.0"
+            alpine: "3.14"
+            type: cli
+          - php: "8.0"
+            alpine: "3.14"
+            type: fpm
     steps:
       - uses: actions/checkout@v2
       - run: ./build-php.sh ${{ matrix.type }} ${{ matrix.php }} ${{ matrix.alpine }}
@@ -203,6 +209,12 @@ jobs:
             type: cli
           - php: "7.1"
             alpine: "3.10"
+            type: fpm
+          - php: "8.0"
+            alpine: "3.14"
+            type: cli
+          - php: "8.0"
+            alpine: "3.14"
             type: fpm
     steps:
       - uses: actions/checkout@v2
@@ -295,6 +307,12 @@ jobs:
             type: cli
           - php: "7.1"
             alpine: "3.10"
+            type: fpm
+          - php: "8.0"
+            alpine: "3.14"
+            type: cli
+          - php: "8.0"
+            alpine: "3.14"
             type: fpm
     steps:
       - uses: actions/checkout@v2
@@ -451,6 +469,12 @@ jobs:
             type: cli
           - php: "7.1"
             alpine: "3.10"
+            type: fpm
+          - php: "8.0"
+            alpine: "3.14"
+            type: cli
+          - php: "8.0"
+            alpine: "3.14"
             type: fpm
     steps:
       - uses: actions/checkout@v2
