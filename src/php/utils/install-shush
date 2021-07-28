@@ -2,7 +2,9 @@
 
 set -xe
 
-curl -sL -o /usr/local/bin/shush https://github.com/realestate-com-au/shush/releases/download/v1.3.4/shush_linux_amd64
+curl -sL -o /usr/local/bin/shush https://github.com/realestate-com-au/shush/releases/download/v1.5.0/shush_linux_amd64
+
+echo "cdec941dc5f45dda2d981169aa1845540d2c5bf98bfd1d8a85deaa6a6a43a4d1  /usr/local/bin/shush" | sha256sum -c
 
 chmod +x /usr/local/bin/shush
 
