@@ -14,10 +14,10 @@ ENV PHP_FPM_ACCESS_FORMAT %R - %u %t \\\"%m %r\\\" %s
 # Add usabilla user and group
 RUN set -x \
     && addgroup -g 1000 app \
-    && adduser -u 1000 -D -G app app
+    && adduser -u 1000 -D -G app app \
 
-# Temporary fix: pulls in the aports patch for https://bugs.alpinelinux.org/issues/10648
-RUN apk add --no-cache --upgrade apk-tools
+    # Temporary fix: pulls in the aports patch for https://bugs.alpinelinux.org/issues/10648
+    && apk add --no-cache --upgrade apk-tools
 
 # Install docker help scripts
 COPY src/php/utils/docker/ /usr/local/bin/
@@ -37,14 +37,14 @@ RUN set -x \
     # those deletions happen since the helper scripts nor the official image are removing them
     && docker-php-source-tarball clean && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps \
-    && apk add --no-cache fcgi
+    && apk add --no-cache fcgi \
 
-# Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
-RUN apk upgrade --no-cache curl libxml2 libxslt
+    # Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
+    && apk upgrade --no-cache curl libxml2 libxslt \
 
-# Create a symlink to the recommended production configuration
-# ref: https://github.com/docker-library/docs/tree/master/php#configuration
-RUN ln -s $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
+    # Create a symlink to the recommended production configuration
+    # ref: https://github.com/docker-library/docs/tree/master/php#configuration
+    && ln -s $PHP_INI_DIR/php.ini-production $PHP_INI_DIR/php.ini
 
 COPY src/gpg /usr/local/etc/gpg
 COPY src/php/conf/ /usr/local/etc/php/conf.d/
