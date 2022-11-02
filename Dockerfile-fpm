@@ -37,7 +37,7 @@ RUN set -x \
     && docker-php-ext-enable apcu \
     && docker-php-ext-enable sodium \
     # those deletions happen since the helper scripts nor the official image are removing them
-    && docker-php-source-tarball clean && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
+    && docker-php-source-tarball clean && (rm /usr/local/bin/phpdbg || true) && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps \
     && apk add --no-cache fcgi \
 
