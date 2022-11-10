@@ -29,7 +29,7 @@ case "$1" in
 			exit 1
 		fi
 
-		# If php version >= 8.2 install the right version of xdebug and linux headers 
+		# If the php version is >=8.2, then the script installs the 8.2 compatible xdebug release 
 		php_version=$(php -r 'echo PHP_VERSION;' | cut -c1-3 | tr -d '\n')
 		if [ "$(echo "$php_version >= 8.2" | bc)" = 1 ]; then
 			apk add --update linux-headers
