@@ -33,7 +33,7 @@ case "$1" in
 		php_version=$(php -r 'echo PHP_VERSION;' | cut -c1-3 | tr -d '\n')
 		if [ "$(echo "$php_version >= 8.2" | bc)" = 1 ]; then
 			apk add --update linux-headers
-			pecl install xdebug-3.2.0RC1
+			pecl install xdebug-beta
 		else
 			pecl install xdebug-stable || pecl install xdebug-2.9.8
 		fi
