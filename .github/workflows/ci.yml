@@ -186,11 +186,11 @@ jobs:
           - php: "8.1"
             alpine: "3.15"
             type: fpm
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "cli"
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "fpm"
     steps:
       - uses: actions/checkout@v2
@@ -246,11 +246,11 @@ jobs:
           - php: "8.1"
             alpine: "3.15"
             type: fpm
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "cli"
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "fpm"
     steps:
       - uses: actions/checkout@v2
@@ -362,11 +362,11 @@ jobs:
           - php: "8.1"
             alpine: "3.15"
             type: fpm
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "cli"
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "fpm"
     steps:
       - uses: actions/checkout@v2
@@ -542,11 +542,11 @@ jobs:
           - php: "8.1"
             alpine: "3.15"
             type: fpm
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "cli"
-          - php: "8.2-rc"
-            alpine: "3.15"
+          - php: "8.2"
+            alpine: "3.17"
             type: "fpm"
     steps:
       - uses: actions/checkout@v2
