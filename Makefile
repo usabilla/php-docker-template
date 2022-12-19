@@ -62,19 +62,45 @@ clean-tags:
 push-cli: BUILDINGIMAGE=cli
 push-cli:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
+push-cli-github: BUILDINGIMAGE=cli
+push-cli-github:
+	cat /etc/docker/daemon.json | jq '."max-concurrent-uploads"=1' | sudo tee /etc/docker/daemon.json && sudo service docker restart && cat ./tmp/build-${BUILDINGIMAGE}.tags | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|g" | xargs -I % docker push %
+tag-cli-github: BUILDINGIMAGE=cli
+tag-cli-github:
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % sh -c 'echo docker tag % % | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|2" | bash -'
 push-fpm: BUILDINGIMAGE=fpm
 push-fpm:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
+push-fpm-github: BUILDINGIMAGE=fpm
+push-fpm-github:
+	cat /etc/docker/daemon.json | jq '."max-concurrent-uploads"=1' | sudo tee /etc/docker/daemon.json && sudo service docker restart && cat ./tmp/build-${BUILDINGIMAGE}.tags | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|g" | xargs -I % docker push %
+tag-fpm-github: BUILDINGIMAGE=fpm
+tag-fpm-github:
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % sh -c 'echo docker tag % % | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|2" | bash -'
 push-http: BUILDINGIMAGE=http
 push-http:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
+push-http-github: BUILDINGIMAGE=http
+push-http-github:
+	cat /etc/docker/daemon.json | jq '."max-concurrent-uploads"=1' | sudo tee /etc/docker/daemon.json && sudo service docker restart && cat ./tmp/build-${BUILDINGIMAGE}.tags | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|g" | xargs -I % docker push %
+tag-http-github: BUILDINGIMAGE=http
+tag-http-github:
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % sh -c 'echo docker tag % % | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|2" | bash -'
 push-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
 push-prometheus-exporter-file:
 	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % docker push %
+push-prometheus-exporter-file-github: BUILDINGIMAGE=prometheus-exporter-file
+push-prometheus-exporter-file-github:
+	cat /etc/docker/daemon.json | jq '."max-concurrent-uploads"=1' | sudo tee /etc/docker/daemon.json && sudo service docker restart && cat ./tmp/build-${BUILDINGIMAGE}.tags | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|g" | xargs -I % docker push %
+tag-prometheus-exporter-file-github: BUILDINGIMAGE=prometheus-exporter-file
+tag-prometheus-exporter-file-github:
+	cat ./tmp/build-${BUILDINGIMAGE}.tags | xargs -I % sh -c 'echo docker tag % % | sed "s|$$DOCKER_IMAGE|$$DOCKER_GH_IMAGE|2" | bash -'
 
 # CI dependencies
 ci-docker-login:
 	docker login --username $$CONTAINER_REGISTRY_USERNAME --password $$CONTAINER_REGISTRY_PASSWORD
+ci-docker-login-github:
+	docker login ghcr.io --username $$CONTAINER_REGISTRY_USERNAME --password $$CONTAINER_REGISTRY_PASSWORD
 
 lint:
 	docker run -v ${current_dir}:/project:ro --workdir=/project --rm -it hadolint/hadolint:latest-debian hadolint /project/Dockerfile-cli /project/Dockerfile-fpm /project/Dockerfile-http

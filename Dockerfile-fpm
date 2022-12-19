@@ -55,8 +55,8 @@ COPY src/php/fpm/conf/*.conf.* /usr/local/etc/php-fpm.d/
 # Remove configuration files which are templated during the entrypoint command
 RUN rm /usr/local/etc/php-fpm.d/zz-docker.conf /usr/local/etc/php-fpm.d/www.conf.default
 
-# Install shush, dumb-init and composer
-RUN install-shush && rm -f /usr/local/bin/install-shush \
+# Install curl-dev in order to fix curl binary in Alpine 3.17, shush, dumb-init and composer
+RUN apk add --no-cache curl-dev && install-shush && rm -f /usr/local/bin/install-shush \
     && install-dumb-init && rm -f /usr/local/bin/install-dumb-init \
     && install-composer && rm -f /usr/local/bin/install-composer
 
