@@ -1,0 +1,43 @@
+server {
+    listen ${NGINX_PERMISSIONS_CACHE_PORT};
+    listen [::]:${NGINX_PERMISSIONS_CACHE_PORT};
+    server_name  ${NGINX_SERVER_NAME};
+
+    root    ${NGINX_DOCUMENT_ROOT};
+    charset UTF-8;
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    # A directive that will run DNS resolution process for a domain name
+    resolver ${NGINX_DNS_RESOLVER} valid=60s;
+
+    location / {
+        # Cache key should be defined in HTTP section
+        proxy_cache usersvc;
+        
+        # We will lock cache and will aggressively use it once we have a valid record for at least 2 minutes
+        proxy_cache_min_uses 1;
+        proxy_cache_lock on;
+        proxy_cache_valid 200 2m;
+
+        # We will cache POST and GET requests
+        proxy_cache_methods POST GET;
+        proxy_buffering on;
+
+        # Our cache key will be URI + Body to support GET and POST methods
+        proxy_cache_key "${ESCAPE}request_uri|${ESCAPE}request_body";
+
+        # We won't duplicate Vary header
+        proxy_hide_header Vary;
+
+        # Propagate a header to the client for request tracking
+        add_header X-Cache-Status ${ESCAPE}upstream_cache_status always;
+        
+        # This is a trick to enable NGINX to use resolver directive, if it is set without set directive it will be resolved only on startup once
+        set ${ESCAPE}upstream ${NGINX_PERMISSIONS_CACHE_HOST};
+        proxy_pass ${ESCAPE}upstream;
+    }
+}

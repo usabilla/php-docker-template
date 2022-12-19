@@ -13,12 +13,15 @@ http {
     include       /etc/nginx/mime.types;
     default_type  text/plain;
 
-    log_format custom  '${ESCAPE}remote_addr - ${ESCAPE}remote_user [${ESCAPE}time_local] "${ESCAPE}request" '
+    log_format custom  '${ESCAPE}request_time ${ESCAPE}remote_addr - ${ESCAPE}remote_user [${ESCAPE}time_local] "${ESCAPE}request" '
                        '${ESCAPE}status ${ESCAPE}body_bytes_sent '
                        '"${ESCAPE}http_referer" "${ESCAPE}http_user_agent" '
                        '"X-Forwarded-For: ${ESCAPE}http_x_forwarded_for" '
                        '"Accept: ${ESCAPE}http_accept" '
                        '"Accept-Encoding: ${ESCAPE}http_accept_encoding"';
+
+    # Define cache for 
+    proxy_cache_path ${NGINX_DOCUMENT_ROOT}/usersvccache levels=1:2 keys_zone=usersvc:10m inactive=24h  max_size=1g;
 
     access_log /dev/stdout custom;
     error_log stderr notice;
