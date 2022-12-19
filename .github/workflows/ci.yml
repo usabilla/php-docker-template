@@ -501,6 +501,7 @@ jobs:
           name: docker-image-prometheus-exporter-file
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
+      - run: cat ./tmp/build-prometheus-exporter-file.tags | xargs echo
       - run: make ci-docker-login push-prometheus-exporter-file
         env:
           CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
