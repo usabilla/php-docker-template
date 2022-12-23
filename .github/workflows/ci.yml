@@ -483,7 +483,7 @@ jobs:
       - run: echo "✔️"
   push-prometheus-exporter-file:
     name: Push prometheus-exporter-file
-#    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
     needs:
       - test-http
       - test-php
@@ -502,10 +502,10 @@ jobs:
           name: docker-image-prometheus-exporter-file
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
-#      - run: make ci-docker-login push-prometheus-exporter-file
-#        env:
-#          CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
-#          CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - run: make ci-docker-login push-prometheus-exporter-file
+        env:
+          CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
       - name: Retag all images in order to be pushed to GHCR.io
         run : make tag-prometheus-exporter-file-github
       - name: Push images to GHCR.io
@@ -515,7 +515,7 @@ jobs:
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
   push-http:
     name: Push nginx ${{ matrix.nginx }}
-#    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
     needs:
       - test-http
       - test-php
@@ -537,10 +537,10 @@ jobs:
           name: docker-image-http-${{ matrix.nginx }}
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
-#      - run: make ci-docker-login push-http
-#        env:
-#          CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
-#          CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - run: make ci-docker-login push-http
+        env:
+          CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
       - name: Retag all images in order to be pushed to GHCR.io
         run : make tag-http-github
       - name: Push images to GHCR.io
@@ -551,7 +551,7 @@ jobs:
 
   push-php:
     name: Push PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }}
-#    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
+    if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
     needs:
       - test-http
       - test-php
@@ -620,10 +620,10 @@ jobs:
           name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
-#      - run: make ci-docker-login push-${{ matrix.type }}
-#        env:
-#          CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
-#          CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - run: make ci-docker-login push-${{ matrix.type }}
+        env:
+          CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
       - name: Retag all images in order to be pushed to GHCR.io
         run : make tag-${{ matrix.type }}-github
       - name: Push images to GHCR.io
@@ -631,4 +631,3 @@ jobs:
         env:
           CONTAINER_REGISTRY_USERNAME: ${{ github.actor }}
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
-
