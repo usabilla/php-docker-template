@@ -192,6 +192,12 @@ jobs:
           - php: "8.1"
             alpine: "3.15"
             type: fpm
+          - php: "8.1"
+            alpine: "3.16"
+            type: cli
+          - php: "8.1"
+            alpine: "3.16"
+            type: fpm
           - php: "8.2"
             alpine: "3.17"
             type: "cli"
@@ -257,6 +263,12 @@ jobs:
             type: cli
           - php: "8.1"
             alpine: "3.15"
+            type: fpm
+          - php: "8.1"
+            alpine: "3.16"
+            type: cli
+          - php: "8.1"
+            alpine: "3.16"
             type: fpm
           - php: "8.2"
             alpine: "3.17"
@@ -379,6 +391,12 @@ jobs:
             type: cli
           - php: "8.1"
             alpine: "3.15"
+            type: fpm
+          - php: "8.1"
+            alpine: "3.16"
+            type: cli
+          - php: "8.1"
+            alpine: "3.16"
             type: fpm
           - php: "8.2"
             alpine: "3.17"
@@ -565,6 +583,12 @@ jobs:
             type: cli
           - php: "8.1"
             alpine: "3.15"
+            type: fpm
+          - php: "8.1"
+            alpine: "3.16"
+            type: cli
+          - php: "8.1"
+            alpine: "3.16"
             type: fpm
           - php: "8.2"
             alpine: "3.17"
