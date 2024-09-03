@@ -320,7 +320,7 @@ jobs:
           sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
           sudo chmod +x /usr/local/bin/clair-scanner
       - name: Download Docker image to scan
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
           path: ./tmp
@@ -347,7 +347,7 @@ jobs:
           sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
           sudo chmod +x /usr/local/bin/clair-scanner
       - name: Download Docker image to scan
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-http-${{ matrix.nginx }}
           path: ./tmp
@@ -374,7 +374,7 @@ jobs:
           sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
           sudo chmod +x /usr/local/bin/clair-scanner
       - name: Download Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-prometheus-exporter-file
           path: ./tmp
@@ -461,7 +461,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
           path: ./tmp
@@ -486,12 +486,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download PHP Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-fpm-${{ matrix.php }}-${{ matrix.alpine }}
           path: ./tmp
       - name: Download nginx Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-http-${{ matrix.nginx }}
           path: ./tmp
@@ -514,7 +514,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download nginx Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-prometheus-exporter-file
           path: ./tmp
@@ -550,7 +550,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-prometheus-exporter-file
           path: ./tmp
@@ -578,7 +578,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-http-${{ matrix.nginx }}
           path: ./tmp
@@ -671,7 +671,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4.1.7
         with:
           name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
           path: ./tmp
