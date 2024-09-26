@@ -21,7 +21,7 @@ declare -r USABILLA_TAG="${USABILLA_TAG_PREFIX}:${IMAGE}"
 
 TAG_FILE="./tmp/build-${IMAGE}.tags"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${DOCKER_FILE}" | docker build --pull -t "${USABILLA_TAG}" \
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${DOCKER_FILE}" | docker build --platform linux/amd64,linux/arm64 --pull -t "${USABILLA_TAG}" \
     --build-arg=NGINX_VHOST_TEMPLATE=prometheus-exporter-file --target="http" -f - . \
     && echo "${USABILLA_TAG}" >> "${TAG_FILE}"
 

@@ -21,8 +21,8 @@ declare -r USABILLA_TAG_DEV="${USABILLA_TAG}-dev"
 
 declare -r TAG_FILE="./tmp/build-${IMAGE}.tags"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG}" --target="${IMAGE}" -f - . \
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --platform linux/amd64,linux/arm64 --pull -t "${USABILLA_TAG}" --target="${IMAGE}" -f - . \
     && echo "$USABILLA_TAG" >> "$TAG_FILE"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG_DEV}" --target="${IMAGE}-dev" -f - . \
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --platform linux/amd64,linux/arm64 --pull -t "${USABILLA_TAG_DEV}" --target="${IMAGE}-dev" -f - . \
     && echo "$USABILLA_TAG_DEV" >> "$TAG_FILE"
