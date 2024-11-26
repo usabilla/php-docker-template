@@ -11,9 +11,11 @@ def test_php_images_contain_helper_scripts(host):
     ]
 
     for file in official_helper_scripts:
+        expected_file_mode = get_expected_os_mode(host)
+
         assert host.file(file).exists is True
         assert host.file(file).is_file is True
-        assert host.file(file).mode == 0o775
+        assert host.file(file).mode == expected_file_mode
 
     helper_scripts = [
         "/usr/local/bin/docker-php-dev-mode",
@@ -74,3 +76,15 @@ def test_php_extension_script_for_rdkafka(host):
 def test_php_extension_script_for_pdo_pgsql(host):
     host.run_expect([0], "docker-php-ext-pdo-pgsql")
     assert 'pdo_pgsql' in host.run('php -m').stdout
+
+def get_os_version(host):
+    return host.run("cat /etc/alpine-release").stdout
+
+def get_expected_os_mode(host):
+    expected_file_mode = 0o775
+    os_version = get_os_version(host)
+
+    if os_version > "3.17.999":
+        expected_file_mode = 0o755
+
+    return expected_file_mode
