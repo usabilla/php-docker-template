@@ -121,7 +121,7 @@ jobs:
       - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-http-${{ matrix.nginx }}.tar
         shell: bash
       - name: Upload Images
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-http-${{ matrix.nginx }}
           path: ./tmp
@@ -142,7 +142,7 @@ jobs:
       - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-prometheus-exporter-file.tar
         shell: bash
       - name: Upload Images
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-prometheus-exporter-file
           path: ./tmp
@@ -222,6 +222,12 @@ jobs:
           - php: "8.3"
             alpine: "3.19"
             type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "cli"
     steps:
       - uses: actions/checkout@v2
       - run: ./build-php.sh ${{ matrix.type }} ${{ matrix.php }} ${{ matrix.alpine }}
@@ -231,7 +237,7 @@ jobs:
       - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}.tar
         shell: bash
       - name: Upload Images
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
           path: ./tmp
@@ -312,6 +318,12 @@ jobs:
           - php: "8.3"
             alpine: "3.19"
             type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "cli"
     steps:
       - uses: actions/checkout@v2
       - name: Install clair-scanner
@@ -458,6 +470,12 @@ jobs:
           - php: "8.3"
             alpine: "3.19"
             type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "cli"
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
@@ -668,6 +686,12 @@ jobs:
           - php: "8.3"
             alpine: "3.19"
             type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "fpm"
+          - php: "8.3"
+            alpine: "3.20"
+            type: "cli"
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
