@@ -1,6 +1,9 @@
 [global]
 daemonize = no
 
+; Log level - wip - has to be in global
+log_level = ${PHP_FPM_GLOBAL_LOG_LEVEL}
+
 [www]
 ; Choose how the process manager will control the number of child processes.
 ; Possible Values:
