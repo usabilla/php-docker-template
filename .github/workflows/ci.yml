@@ -234,6 +234,12 @@ jobs:
           - php: "8.3"
             alpine: "3.20"
             type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "fpm"
     steps:
       - uses: actions/checkout@v2
       - run: ./build-php.sh ${{ matrix.type }} ${{ matrix.php }} ${{ matrix.alpine }}
@@ -336,6 +342,12 @@ jobs:
           - php: "8.3"
             alpine: "3.20"
             type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "fpm"
     steps:
       - uses: actions/checkout@v2
       - name: Install clair-scanner
@@ -494,6 +506,12 @@ jobs:
           - php: "8.3"
             alpine: "3.20"
             type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "fpm"
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
@@ -716,6 +734,12 @@ jobs:
           - php: "8.3"
             alpine: "3.20"
             type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "cli"
+          - php: "8.4"
+            alpine: "3.22"
+            type: "fpm"
     steps:
       - uses: actions/checkout@v2
       - name: Download Images
