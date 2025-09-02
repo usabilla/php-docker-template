@@ -1,4 +1,6 @@
 import pytest
+import re
+from packaging import version
 
 CONFIG_DIR = '/usr/local/etc/php'
 
@@ -47,7 +49,13 @@ def test_development_config_is_effective(host):
 
     assert u'display_errors => STDOUT => STDOUT' in config
     assert u'display_startup_errors => On => On' in config
-    assert u'error_reporting => 32767 => 32767' in config
+
+    php_version_string = (re.search(r'PHP Version => (\d+\.\d+\.\d+)', config)).group(1)
+    php_version = version.parse(php_version_string)
+    if php_version < version.parse("8.4.0"):
+        assert u'error_reporting => 32767 => 32767' in config
+    else:
+        assert u'error_reporting => 30719 => 30719' in config
 
 @pytest.mark.php_cli
 def test_cli_configuration_is_effective(host):
