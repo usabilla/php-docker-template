@@ -16,13 +16,24 @@ declare -r VERSION_ALPINE=$3
 declare -r IMAGE_ORIGINAL_TAG="7.[0-9]-${IMAGE}-alpine3.[0-9]"
 
 declare -r IMAGE_TAG="${VERSION_PHP}-${IMAGE}-alpine${VERSION_ALPINE}"
-declare -r USABILLA_TAG="usabillabv/php:${VERSION_PHP}-${IMAGE}-alpine${VERSION_ALPINE}"
-declare -r USABILLA_TAG_DEV="${USABILLA_TAG}-dev"
+if [[ ! -v DOCKER_BUILD_PLATFORM ]]; then
+   declare -r DOCKER_BUILD_FLAGS=""
+   declare -r USABILLA_TAG_SUFFIX=""
+else
+   declare -r DOCKER_BUILD_FLAGS="--platform=${DOCKER_BUILD_PLATFORM}"
+   # shellcheck disable=SC2155
+   declare -r USABILLA_TAG_SUFFIX="-${DOCKER_BUILD_PLATFORM//\//-}"
+fi
+declare -r USABILLA_TAG_PREFIX="usabillabv/php:${VERSION_PHP}-${IMAGE}-alpine${VERSION_ALPINE}"
+declare -r USABILLA_TAG="${USABILLA_TAG_PREFIX}${USABILLA_TAG_SUFFIX}"
+declare -r USABILLA_TAG_DEV="${USABILLA_TAG_PREFIX}-dev${USABILLA_TAG_SUFFIX}"
 
-declare -r TAG_FILE="./tmp/build-${IMAGE}.tags"
+declare -r TAG_FILE="./tmp/build-${IMAGE}${USABILLA_TAG_SUFFIX}.tags"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG}" --target="${IMAGE}" -f - . \
+# shellcheck disable=SC2086
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG}" --target="${IMAGE}" ${DOCKER_BUILD_FLAGS} -f - . \
     && echo "$USABILLA_TAG" >> "$TAG_FILE"
 
-sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG_DEV}" --target="${IMAGE}-dev" -f - . \
+# shellcheck disable=SC2086
+sed -E "s/${IMAGE_ORIGINAL_TAG}/${IMAGE_TAG}/g" "Dockerfile-${IMAGE}" | docker build --pull -t "${USABILLA_TAG_DEV}" --target="${IMAGE}-dev" ${DOCKER_BUILD_FLAGS} -f - . \
     && echo "$USABILLA_TAG_DEV" >> "$TAG_FILE"

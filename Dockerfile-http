@@ -1,4 +1,4 @@
-FROM nginx:1.15-alpine as http
+FROM nginx:1.15-alpine AS http
 
 # Add usabilla user and group
 RUN set -x \
@@ -21,8 +21,8 @@ ENV NGINX_LARGE_CLIENT_HEADER_BUFFERS="4 8k"
 ENV NGINX_CORS_ENABLE=false
 ENV NGINX_CORS_ALLOW_ORIGIN="*"
 
-# Patch gCVE-2019-11068 (libxslt)
-RUN apk upgrade --no-cache libxslt
+RUN set -x \
+    && apk upgrade --no-cache
 
 # Nginx helper scripts
 COPY src/http/nginx/docker-nginx-* /usr/local/bin/
@@ -37,6 +37,6 @@ CMD ["docker-nginx-entrypoint"]
 # this can be overriden in the child images
 HEALTHCHECK NONE
 
-FROM http as http-dev
+FROM http AS http-dev
 
 ENV NGINX_EXPOSE_VERSION=on

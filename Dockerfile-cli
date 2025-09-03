@@ -1,5 +1,7 @@
 # syntax=docker/dockerfile:experimental
 FROM php:7.2-cli-alpine3.7 as cli
+ARG TARGETOS
+ARG TARGETARCH
 
 # Add usabilla user and group
 RUN set -x \
@@ -15,6 +17,7 @@ COPY src/php/utils/docker/ /usr/local/bin/
 # Install PHP extensions
 # hadolint ignore=DL4006
 RUN set -x \
+    && apk upgrade --no-cache \
     # Install curl-dev in order to address the curl binary issue in some Alpine versions
     && apk add --no-cache curl-dev \
     # Adding sodium purely for the 7.1 image, it's already in 7.2 and up: https://www.php.net/manual/en/sodium.installation.php \
@@ -30,9 +33,6 @@ RUN set -x \
     # Removing all PHP leftovers since the helper scripts nor the official image are removing them
     && docker-php-source-tarball clean && rm /usr/local/bin/php-cgi && rm /usr/local/bin/phpdbg && rm -rf /tmp/pear ~/.pearrc \
     && apk del .phpize-deps \
-
-    # Patch CVE-2018-14618 (curl), CVE-2018-16842 (libxml2), CVE-2019-11068 (libxslt)
-    && apk upgrade --no-cache curl libxml2 libxslt \
 
     # Create a symlink to the recommended production configuration
     # ref: https://github.com/docker-library/docs/tree/master/php#configuration

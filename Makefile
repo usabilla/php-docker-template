@@ -52,7 +52,7 @@ build-http: clean-tags
 # Adding arbitrary version 1.0 in order to make sure if we break compatibility we have to up it
 build-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
 build-prometheus-exporter-file: clean-tags
-	./build-prometheus-exporter-file.sh 1.18 prometheus-exporter-file1.0 prometheus-exporter-file1
+	./build-prometheus-exporter-file.sh 1.29 prometheus-exporter-file1.0 prometheus-exporter-file1
 
 .NOTPARALLEL: clean-tags
 clean-tags:
@@ -103,8 +103,4 @@ test-prometheus-exporter-file-e2e: ./tmp/build-prometheus-exporter-file.tags
 	xargs -I % ./test-prometheus-exporter-file-e2e.sh % < ./tmp/build-prometheus-exporter-file.tags
 
 scan-vulnerability:
-	docker compose -f test/security/docker-compose.yml -p clair-ci up -d
-	RETRIES=0 && while ! wget -T 10 -q -O /dev/null http://localhost:6060/v1/namespaces ; do sleep 1 ; echo -n "." ; if [ $${RETRIES} -eq 10 ] ; then echo " Timeout, aborting." ; exit 1 ; fi ; RETRIES=$$(($${RETRIES}+1)) ; done
-	mkdir -p ./tmp/clair/usabillabv
-	cat ./tmp/build-*.tags | xargs -I % sh -c 'clair-scanner --ip 172.17.0.1 -r "./tmp/clair/%.json" -l ./tmp/clair/clair.log % || echo "% is vulnerable"'
-	docker compose -f test/security/docker-compose.yml -p clair-ci down
+	cat ./tmp/build-*.tags | xargs -I % sh -c 'docker run -v /tmp/trivy:/var/lib/trivy -v /var/run/docker.sock:/var/run/docker.sock -t aquasec/trivy:latest --cache-dir /var/lib/trivy image --skip-files "/usr/local/bin/shush" --exit-code 1 --no-progress % || (echo "% is vulnerable" && exit 1)'
