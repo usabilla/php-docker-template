@@ -31,8 +31,7 @@ jobs:
         name: Generate Alpine
         shell: bash
         run: |
-          echo "versions=[\"3.21\"]" >> $GITHUB_OUTPUT
-#          echo "versions=[\"3.22\",\"3.21\",\"3.19\"]" >> $GITHUB_OUTPUT
+          echo "versions=[\"3.22\",\"3.21\",\"3.19\"]" >> $GITHUB_OUTPUT
   supported-nginx-versions:
     name: Supported nginx versions
     runs-on: ubuntu-latest
@@ -54,8 +53,7 @@ jobs:
         name: Generate PHP
         shell: bash
         run: |
-          echo "versions=[\"8.3\"]" >> $GITHUB_OUTPUT
-#          echo "versions=[\"8.4\",\"8.3\",\"8.2\"]" >> $GITHUB_OUTPUT
+          echo "versions=[\"8.4\",\"8.3\",\"8.2\"]" >> $GITHUB_OUTPUT
   php-type-matrix:
     name: PHP Type Matrix
     runs-on: ubuntu-latest
