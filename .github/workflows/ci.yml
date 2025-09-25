@@ -11,6 +11,16 @@ on:
   schedule:
     - cron: '3 3 * * 1'
 jobs:
+  supported-platforms:
+    name: Supported platforms
+    runs-on: ubuntu-latest
+    outputs:
+      platform: ${{ steps.supported-platform-matrix.outputs.platform }}
+    steps:
+      - id: supported-platform-matrix
+        name: Generate Platform list
+        run: |
+          echo "platform=[\"linux/amd64\",\"linux/arm64\"]" >> $GITHUB_OUTPUT
   supported-alpine-versions:
     name: Supported Alpine versions
     runs-on: ubuntu-latest
@@ -21,7 +31,8 @@ jobs:
         name: Generate Alpine
         shell: bash
         run: |
-          echo "::set-output name=versions::[\"3.14\", \"3.13\", \"3.12\", \"3.11\"]"
+          echo "versions=[\"3.21\"]" >> $GITHUB_OUTPUT
+#          echo "versions=[\"3.22\",\"3.21\",\"3.19\"]" >> $GITHUB_OUTPUT
   supported-nginx-versions:
     name: Supported nginx versions
     runs-on: ubuntu-latest
@@ -31,8 +42,8 @@ jobs:
       - id: supported-nginx-versions
         name: Generate nginx
         shell: bash
-        run: | # The "1.19-nginx1-nginx" in here will be changed to "1.19 nginx1 nginx" when calling ./build-http.sh
-          echo "::set-output name=versions::[\"1.19-nginx1-nginx\", \"1.18\"]"
+        run: | # The "1.29-nginx1-nginx" in here will be changed to "1.29 nginx1 nginx" when calling ./build-http.sh
+          echo "versions=[\"1.29-nginx1-nginx\", \"1.28\"]" >> $GITHUB_OUTPUT
   supported-php-versions:
     name: Supported PHP versions
     runs-on: ubuntu-latest
@@ -43,7 +54,8 @@ jobs:
         name: Generate PHP
         shell: bash
         run: |
-          echo "::set-output name=versions::[\"7.4\", \"7.3\"]"
+          echo "versions=[\"8.3\"]" >> $GITHUB_OUTPUT
+#          echo "versions=[\"8.4\",\"8.3\",\"8.2\"]" >> $GITHUB_OUTPUT
   php-type-matrix:
     name: PHP Type Matrix
     runs-on: ubuntu-latest
@@ -54,7 +66,7 @@ jobs:
         name: Generate Type
         shell: bash
         run: |
-          echo "::set-output name=type::[\"cli\", \"fpm\"]"
+          echo "type=[\"cli\", \"fpm\"]" >> $GITHUB_OUTPUT
   type-matrix:
     name: Type Matrix
     runs-on: ubuntu-latest
@@ -67,7 +79,7 @@ jobs:
         name: Generate Type
         shell: bash
         run: |
-          echo "::set-output name=type::[\"cli\", \"fpm\", \"http\"]"
+          echo "type=[\"cli\", \"fpm\", \"http\"]" >> $GITHUB_OUTPUT
   lint-docker:
     name: Lint Dockerfile-${{ matrix.type }}
     runs-on: ubuntu-latest
@@ -78,7 +90,7 @@ jobs:
       matrix:
         type: ${{ fromJson(needs.type-matrix.outputs.type) }}
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
       - name: Lint Dockerfile-${{ matrix.type }}
         uses: docker://hadolint/hadolint:latest-debian
         with:
@@ -90,439 +102,241 @@ jobs:
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v5
       - id: files
         name: Generate shell script file list
         shell: bash
         run: |
           list=$(ls src/http/nginx/docker* src/php/utils/install-* src/php/utils/docker/* build* test-*  | tr "\n" " " | sed -z '$ s/\n$//')
-          echo -e "::set-output name=list::/github/workspace/${list// / /github/workspace/}build-http.sh"
+          echo -e "list=/github/workspace/${list// / /github/workspace/}build-http.sh" >> $GITHUB_OUTPUT
       - name: Lint shell scripts
         uses: docker://koalaman/shellcheck:latest
         with:
           args: ${{ steps.files.outputs.list }}
   build-http:
-    name: Build nginx ${{ matrix.nginx }}
+    name: Build nginx ${{ matrix.nginx }} (${{ matrix.platform }})
     needs:
       - lint-docker
       - lint-shell
       - supported-nginx-versions
-    runs-on: ubuntu-latest
+      - supported-platforms
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         nginx: ${{ fromJson(needs.supported-nginx-versions.outputs.nginx) }}
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - run: ./build-http.sh $(echo "${{ matrix.nginx }}" | tr '-' ' ')
         shell: bash
-      - run: cat ./tmp/build-http.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
+        env:
+          DOCKER_BUILD_PLATFORM: ${{ matrix.platform }}
+      - run: cat ./tmp/build-http-${{ env.PLATFORM_PAIR }}.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
         shell: bash
-      - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-http-${{ matrix.nginx }}.tar
+      - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-http-${{ matrix.nginx }}-${{ env.PLATFORM_PAIR }}.tar
         shell: bash
       - name: Upload Images
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image-http-${{ matrix.nginx }}
+          name: docker-image-http-${{ matrix.nginx }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
   build-prometheus-exporter-file:
-    name: Build prometheus-exporter-file
+    name: Build prometheus-exporter-file (${{ matrix.platform }})
     needs:
       - lint-docker
       - lint-shell
-    runs-on: ubuntu-latest
+      - supported-platforms
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
+      matrix:
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - run: make build-prometheus-exporter-file
         shell: bash
-      - run: cat ./tmp/build-prometheus-exporter-file.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
+        env:
+          DOCKER_BUILD_PLATFORM: ${{ matrix.platform }}
+      - run: cat ./tmp/build-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
         shell: bash
-      - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-prometheus-exporter-file.tar
+      - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}.tar
         shell: bash
       - name: Upload Images
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image-prometheus-exporter-file
+          name: docker-image-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}
           path: ./tmp
   build-php:
-    name: Build PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }}
+    name: Build PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }} (${{ matrix.platform }})
     needs:
       - lint-docker
       - lint-shell
       - supported-alpine-versions
       - supported-php-versions
+      - supported-platforms
       - php-type-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
-        include:
-          - php: "7.1"
-            alpine: "3.10"
-            type: cli
-          - php: "7.1"
-            alpine: "3.10"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.14"
-            type: cli
-          - php: "8.0"
-            alpine: "3.14"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.15"
-            type: cli
-          - php: "8.0"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.16"
-            type: cli
-          - php: "8.0"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.15"
-            type: cli
-          - php: "8.1"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.16"
-            type: cli
-          - php: "8.1"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.17"
-            type: cli
-          - php: "8.1"
-            alpine: "3.17"
-            type: fpm
-          - php: "8.2"
-            alpine: "3.17"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.17"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "fpm"
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - run: ./build-php.sh ${{ matrix.type }} ${{ matrix.php }} ${{ matrix.alpine }}
         shell: bash
-      - run: cat ./tmp/build-${{ matrix.type }}.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
+        env:
+          DOCKER_BUILD_PLATFORM: ${{ matrix.platform }}
+      - run: cat ./tmp/build-${{ matrix.type }}-${{ env.PLATFORM_PAIR }}.tags | xargs -I % docker inspect --format='%={{.Id}}:{{index .Config.Env 7}}' %
         shell: bash
-      - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}.tar
+      - run: docker save "${DOCKER_IMAGE}" | gzip -9 > ./tmp/image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}-${{ env.PLATFORM_PAIR }}.tar
         shell: bash
       - name: Upload Images
         uses: actions/upload-artifact@v4
         with:
-          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
+          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
   scan-vulnerability-php:
-    name: Scan PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }} for vulnerabilities
+    name: Scan PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }} for vulnerabilities (${{ matrix.platform }})
     needs:
       - build-php
       - build-http
       - build-prometheus-exporter-file
       - supported-alpine-versions
       - supported-php-versions
+      - supported-platforms
       - php-type-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
-        include:
-          - php: "7.1"
-            alpine: "3.10"
-            type: cli
-          - php: "7.1"
-            alpine: "3.10"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.14"
-            type: cli
-          - php: "8.0"
-            alpine: "3.14"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.15"
-            type: cli
-          - php: "8.0"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.16"
-            type: cli
-          - php: "8.0"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.15"
-            type: cli
-          - php: "8.1"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.16"
-            type: cli
-          - php: "8.1"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.17"
-            type: cli
-          - php: "8.1"
-            alpine: "3.17"
-            type: fpm
-          - php: "8.2"
-            alpine: "3.17"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.17"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "fpm"
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Install clair-scanner
-        shell: bash
+      - name: Prepare
         run: |
-          sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
-          sudo chmod +x /usr/local/bin/clair-scanner
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - name: Download Docker image to scan
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
+          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
-      - run: mkdir -p "./clair/${DOCKER_IMAGE}"
       - run: make scan-vulnerability
   scan-vulnerability-http:
-    name: Scan nginx ${{ matrix.nginx }} for vulnerabilities
+    name: Scan nginx ${{ matrix.nginx }} for vulnerabilities (${{ matrix.platform }})
     needs:
       - build-php
       - build-http
       - build-prometheus-exporter-file
       - supported-nginx-versions
-    runs-on: ubuntu-latest
+      - supported-platforms
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         nginx: ${{ fromJson(needs.supported-nginx-versions.outputs.nginx) }}
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Install clair-scanner
-        shell: bash
+      - name: Prepare
         run: |
-          sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
-          sudo chmod +x /usr/local/bin/clair-scanner
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - name: Download Docker image to scan
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-http-${{ matrix.nginx }}
+          name: docker-image-http-${{ matrix.nginx }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
-        shell: bash
-      - run: mkdir -p "./clair/${DOCKER_IMAGE}"
         shell: bash
       - run: make scan-vulnerability
         shell: bash
   scan-vulnerability-prometheus-exporter-file:
-    name: Scan HTTP prometheus-exporter-file for vulnerabilities
+    name: Scan HTTP prometheus-exporter-file for vulnerabilities (${{ matrix.platform }})
     needs:
       - build-php
       - build-http
       - build-prometheus-exporter-file
-    runs-on: ubuntu-latest
+      - supported-platforms
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
+      matrix:
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
-      - name: Install clair-scanner
-        shell: bash
+      - name: Prepare
         run: |
-          sudo curl -L https://github.com/arminc/clair-scanner/releases/download/v8/clair-scanner_linux_amd64 -o /usr/local/bin/clair-scanner
-          sudo chmod +x /usr/local/bin/clair-scanner
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - name: Download Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-prometheus-exporter-file
+          name: docker-image-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
-      - run: mkdir -p "./clair/${DOCKER_IMAGE}"
       - run: make scan-vulnerability
   test-php:
-    name: Functionaly test PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }}
+    name: Functionaly test PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }} (${{ matrix.platform }})
     needs:
       - build-php
       - build-http
       - build-prometheus-exporter-file
       - supported-alpine-versions
       - supported-php-versions
+      - supported-platforms
       - php-type-matrix
-    runs-on: ubuntu-latest
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
-        include:
-          - php: "7.1"
-            alpine: "3.10"
-            type: cli
-          - php: "7.1"
-            alpine: "3.10"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.14"
-            type: cli
-          - php: "8.0"
-            alpine: "3.14"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.15"
-            type: cli
-          - php: "8.0"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.16"
-            type: cli
-          - php: "8.0"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.15"
-            type: cli
-          - php: "8.1"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.16"
-            type: cli
-          - php: "8.1"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.17"
-            type: cli
-          - php: "8.1"
-            alpine: "3.17"
-            type: fpm
-          - php: "8.2"
-            alpine: "3.17"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.17"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "fpm"
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - name: Download Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
+          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
       - run: docker load --input ./tmp/image*.tar
+      - run: mv ./tmp/build-${{ matrix.type }}-${{ env.PLATFORM_PAIR }}.tags ./tmp/build-${{ matrix.type }}.tags
       - run: make test-${{ matrix.type }}
   test-http:
-    name: Functionaly test nginx ${{ matrix.nginx }} with PHP FPM ${{ matrix.php }} on Alpine ${{ matrix.alpine }}
+    name: Functionaly test nginx ${{ matrix.nginx }} with PHP FPM ${{ matrix.php }} on Alpine ${{ matrix.alpine }} (${{ matrix.platform }})
     needs:
       - build-http
       - build-php
@@ -530,51 +344,70 @@ jobs:
       - supported-alpine-versions
       - supported-nginx-versions
       - supported-php-versions
-    runs-on: ubuntu-latest
+      - supported-platforms
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
       matrix:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         nginx: ${{ fromJson(needs.supported-nginx-versions.outputs.nginx) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - name: Download PHP Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-fpm-${{ matrix.php }}-${{ matrix.alpine }}
+          name: docker-image-fpm-${{ matrix.php }}-${{ matrix.alpine }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
       - name: Download nginx Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-http-${{ matrix.nginx }}
+          name: docker-image-http-${{ matrix.nginx }}-${{ env.PLATFORM_PAIR }}
           path: ./tmp
-      - run: docker load --input ./tmp/image-fpm-${{ matrix.php }}-${{ matrix.alpine }}.tar
-      - run: docker load --input ./tmp/image-http-${{ matrix.nginx }}.tar
+      - run: docker load --input ./tmp/image-fpm-${{ matrix.php }}-${{ matrix.alpine }}-${{ env.PLATFORM_PAIR }}.tar
+      - run: docker load --input ./tmp/image-http-${{ matrix.nginx }}-${{ env.PLATFORM_PAIR }}.tar
       - run: sudo chown -R 1000:1000 ./test/functional/web/tmp/ # Ensure we have the same uid:gid as our `app` docker user
         shell: bash
+      - run: |
+          mv ./tmp/build-http-${{ env.PLATFORM_PAIR }}.tags ./tmp/build-http.tags
+          mv ./tmp/build-fpm-${{ env.PLATFORM_PAIR }}.tags ./tmp/build-fpm.tags
       - run: make test-http
       - run: make test-http-e2e
   test-prometheus-exporter-file:
-    name: Functionaly test prometheus-exporter-file
+    name: Functionaly test prometheus-exporter-file (${{ matrix.platform }})
     needs:
       - build-http
       - build-php
       - build-prometheus-exporter-file
       - supported-nginx-versions
-    runs-on: ubuntu-latest
+      - supported-platforms
+    runs-on: ${{ contains(matrix.platform, 'arm') && 'ubuntu-24.04-arm' || 'ubuntu-24.04' }}
     strategy:
       fail-fast: false
+      matrix:
+        platform: ${{ fromJson(needs.supported-platforms.outputs.platform) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Prepare
+        run: |
+          platform=${{ matrix.platform }}
+          echo "PLATFORM_PAIR=${platform//\//-}" >> $GITHUB_ENV
+          printf "PLATFORM_ARCH=%s" $(echo "${{ matrix.platform }}" | cut -d "/" -f 2) >> $GITHUB_ENV
+      - uses: actions/checkout@v5
       - name: Download nginx Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-prometheus-exporter-file
+          name: docker-image-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}
           path: ./tmp
-      - run: docker load --input ./tmp/image-prometheus-exporter-file.tar
+      - run: docker load --input ./tmp/image-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}.tar
       - run: sudo chown -R 1000:1000 ./test/functional/web/tmp/ # Ensure we have the same uid:gid as our `app` docker user
         shell: bash
+      - run: mv ./tmp/build-prometheus-exporter-file-${{ env.PLATFORM_PAIR }}.tags ./tmp/build-prometheus-exporter-file.tags
       - run: make test-prometheus-exporter-file-e2e
   check-mark: # This is our required step, pay extra attention when this step is changed for what ever reason
     name: ✔️
@@ -598,21 +431,57 @@ jobs:
       - scan-vulnerability-http
       - scan-vulnerability-php
       - scan-vulnerability-prometheus-exporter-file
+      - supported-platforms
+      - check-mark
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:3
+        ports:
+          - 5000:5000
     strategy:
       fail-fast: false
     steps:
-      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver-opts: network=host
+      - uses: actions/checkout@v5
       - name: Download Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-prometheus-exporter-file
+          pattern: docker-image-prometheus-exporter-file-*
           path: ./tmp
-      - run: docker load --input ./tmp/image*.tar
-      - run: make ci-docker-login push-prometheus-exporter-file
+          merge-multiple: true
+      - run: cat ./tmp/build-*.tags > ./tmp/build.tags
+      - run: |
+          for f in ./tmp/image-*.tar; do
+            docker load --input $f
+          done
+      - run: |
+          xargs -I % docker tag "%" "localhost:5000/%" < ./tmp/build.tags
+          xargs -I % docker push "localhost:5000/%" < ./tmp/build.tags
+      - name: Collect non-Arch suffixed tags
+        run: |
+          php -r 'echo implode( PHP_EOL, array_values( array_filter( array_unique( array_map( static function (string $tag) use ($argv): string {$tag = trim($tag); foreach ( explode(",", getenv("ARCHS")) as $platform) { [$os, $arch] = explode("/", $platform); $tag = str_replace("-" . $os . "-" . $arch, "", $tag); $tag = str_replace("${{ env.DOCKER_IMAGE }}:", "", $tag); } return $tag; }, file("./tmp/build.tags") ) ), static fn (string $tag): bool => strlen($tag) > 0) ) );' > ./tmp/tags-to-push.list
+          cat ./tmp/tags-to-push.list
+        env:
+          ARCHS: ${{ join(fromJson(needs.supported-platforms.outputs.platform), ',') }}
+      - name: Create merge Dockerfiles
+        run: |
+          cat ./tmp/tags-to-push.list | xargs -I % sh -c 'echo "FROM localhost:5000/${{ env.DOCKER_IMAGE }}:%-\${TARGETOS}-\${TARGETARCH}" >> ./tmp/docker-file-%'
+          cat ./tmp/docker-file-*
+          ls -lasth ./tmp/docker-file-*
+      - run: make ci-docker-login
         env:
           CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - name: Push all images to registries
+        run: |
+          cat ./tmp/tags-to-push.list | xargs -I % docker buildx build -f ./tmp/docker-file-% -t ${{ env.DOCKER_IMAGE }}:% --platform=${{ join(fromJson(needs.supported-platforms.outputs.platform), ',') }} --push  .
   push-http:
     name: Push nginx ${{ matrix.nginx }}
     if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
@@ -624,23 +493,60 @@ jobs:
       - scan-vulnerability-php
       - scan-vulnerability-prometheus-exporter-file
       - supported-nginx-versions
+      - supported-platforms
+      - check-mark
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:3
+        ports:
+          - 5000:5000
     strategy:
       fail-fast: false
       matrix:
         nginx: ${{ fromJson(needs.supported-nginx-versions.outputs.nginx) }}
     steps:
-      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver-opts: network=host
+      - uses: actions/checkout@v5
       - name: Download Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-http-${{ matrix.nginx }}
+          pattern: docker-image-http-${{ matrix.nginx }}-*
           path: ./tmp
-      - run: docker load --input ./tmp/image*.tar
-      - run: make ci-docker-login push-http
+          merge-multiple: true
+      - run: cat ./tmp/build-*.tags > ./tmp/build.tags
+      - run: |
+          for f in ./tmp/image-*.tar; do
+            docker load --input $f
+          done
+      - run: |
+          xargs -I % docker tag "%" "localhost:5000/%" < ./tmp/build.tags
+          xargs -I % docker push "localhost:5000/%" < ./tmp/build.tags
+      - name: Collect non-Arch suffixed tags
+        run: |
+          php -r 'echo implode( PHP_EOL, array_values( array_filter( array_unique( array_map( static function (string $tag) use ($argv): string {$tag = trim($tag); foreach ( explode(",", getenv("ARCHS")) as $platform) { [$os, $arch] = explode("/", $platform); $tag = str_replace("-" . $os . "-" . $arch, "", $tag); $tag = str_replace("${{ env.DOCKER_IMAGE }}:", "", $tag); } return $tag; }, file("./tmp/build.tags") ) ), static fn (string $tag): bool => strlen($tag) > 0) ) );' > ./tmp/tags-to-push.list
+          cat ./tmp/tags-to-push.list
+        env:
+          ARCHS: ${{ join(fromJson(needs.supported-platforms.outputs.platform), ',') }}
+      - name: Create merge Dockerfiles
+        run: |
+          cat ./tmp/tags-to-push.list | xargs -I % sh -c 'echo "FROM localhost:5000/${{ env.DOCKER_IMAGE }}:%-\${TARGETOS}-\${TARGETARCH}" >> ./tmp/docker-file-%'
+          cat ./tmp/docker-file-*
+          ls -lasth ./tmp/docker-file-*
+      - run: make ci-docker-login
         env:
           CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - name: Push all images to registries
+        run: |
+          cat ./tmp/tags-to-push.list | xargs -I % docker buildx build -f ./tmp/docker-file-% -t ${{ env.DOCKER_IMAGE }}:% --platform=${{ join(fromJson(needs.supported-platforms.outputs.platform), ',') }} --push  .
+
   push-php:
     name: Push PHP ${{ matrix.php }} for ${{ matrix.type }} on Alpine ${{ matrix.alpine }}
     if: (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/master'
@@ -653,102 +559,59 @@ jobs:
       - scan-vulnerability-prometheus-exporter-file
       - supported-alpine-versions
       - supported-php-versions
+      - supported-platforms
       - php-type-matrix
+      - check-mark
     runs-on: ubuntu-latest
+    services:
+      registry:
+        image: registry:3
+        ports:
+          - 5000:5000
     strategy:
       fail-fast: false
       matrix:
         alpine: ${{ fromJson(needs.supported-alpine-versions.outputs.alpine) }}
         php: ${{ fromJson(needs.supported-php-versions.outputs.php) }}
         type: ${{ fromJson(needs.php-type-matrix.outputs.type) }}
-        include:
-          - php: "7.1"
-            alpine: "3.10"
-            type: cli
-          - php: "7.1"
-            alpine: "3.10"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.14"
-            type: cli
-          - php: "8.0"
-            alpine: "3.14"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.15"
-            type: cli
-          - php: "8.0"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.0"
-            alpine: "3.16"
-            type: cli
-          - php: "8.0"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.15"
-            type: cli
-          - php: "8.1"
-            alpine: "3.15"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.16"
-            type: cli
-          - php: "8.1"
-            alpine: "3.16"
-            type: fpm
-          - php: "8.1"
-            alpine: "3.17"
-            type: cli
-          - php: "8.1"
-            alpine: "3.17"
-            type: fpm
-          - php: "8.2"
-            alpine: "3.17"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.17"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.2"
-            alpine: "3.22"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "cli"
-          - php: "8.3"
-            alpine: "3.19"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "fpm"
-          - php: "8.3"
-            alpine: "3.20"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "cli"
-          - php: "8.4"
-            alpine: "3.22"
-            type: "fpm"
     steps:
-      - uses: actions/checkout@v2
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          install: true
+          driver-opts: network=host
+      - uses: actions/checkout@v5
       - name: Download Images
         uses: actions/download-artifact@v4.1.7
         with:
-          name: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}
+          pattern: docker-image-${{ matrix.type }}-${{ matrix.php }}-${{ matrix.alpine }}-*
           path: ./tmp
-      - run: docker load --input ./tmp/image*.tar
-      - run: make ci-docker-login push-${{ matrix.type }}
+          merge-multiple: true
+      - run: cat ./tmp/build-*.tags > ./tmp/build.tags
+      - run: |
+          for f in ./tmp/image-*.tar; do
+            docker load --input $f
+          done
+      - run: |
+          xargs -I % docker tag "%" "localhost:5000/%" < ./tmp/build.tags
+          xargs -I % docker push "localhost:5000/%" < ./tmp/build.tags
+      - name: Collect non-Arch suffixed tags
+        run: |
+          php -r 'echo implode( PHP_EOL, array_values( array_filter( array_unique( array_map( static function (string $tag) use ($argv): string {$tag = trim($tag); foreach ( explode(",", getenv("ARCHS")) as $platform) { [$os, $arch] = explode("/", $platform); $tag = str_replace("-" . $os . "-" . $arch, "", $tag); $tag = str_replace("${{ env.DOCKER_IMAGE }}:", "", $tag); } return $tag; }, file("./tmp/build.tags") ) ), static fn (string $tag): bool => strlen($tag) > 0) ) );' > ./tmp/tags-to-push.list
+          cat ./tmp/tags-to-push.list
+        env:
+          ARCHS: ${{ join(fromJson(needs.supported-platforms.outputs.platform), ',') }}
+      - name: Create merge Dockerfiles
+        run: |
+          cat ./tmp/tags-to-push.list | xargs -I % sh -c 'echo "FROM localhost:5000/${{ env.DOCKER_IMAGE }}:%-\${TARGETOS}-\${TARGETARCH}" >> ./tmp/docker-file-%'
+          cat ./tmp/docker-file-*
+          ls -lasth ./tmp/docker-file-*
+      - run: make ci-docker-login
         env:
           CONTAINER_REGISTRY_USERNAME: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
           CONTAINER_REGISTRY_PASSWORD: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
+      - name: Push all images to registries
+        run: |
+          cat ./tmp/tags-to-push.list | xargs -I % docker buildx build -f ./tmp/docker-file-% -t ${{ env.DOCKER_IMAGE }}:% --platform=${{ join(fromJson(needs.supported-platforms.outputs.platform), ',') }} --push  .

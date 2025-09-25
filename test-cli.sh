@@ -13,7 +13,7 @@ declare -r DOCKER_TAG="$1"
 
 declare TEST_SUITE
 
-if [[ $DOCKER_TAG == *"-dev" ]]; then
+if [[ $DOCKER_TAG == *"-dev"* ]]; then
     TEST_SUITE="php or php_cli or php_dev"
 else
     TEST_SUITE="php or php_cli or php_no_dev and not php_dev"
@@ -36,6 +36,6 @@ docker run --rm -t \
     -v "$(pwd)/test:/tests" \
     -v "$(pwd)/tmp/test-results:/results" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    renatomefi/docker-testinfra:5 \
+    ghcr.io/wyrihaximusnet/testinfra:2025.03.31 \
     -m "$TEST_SUITE" --junitxml="/results/php-cli-$DOCKER_TAG.xml" \
     --verbose --hosts="docker://$DOCKER_CONTAINER"

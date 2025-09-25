@@ -1,4 +1,5 @@
 import pytest
+import time
 
 
 @pytest.mark.nginx_e2e
@@ -22,6 +23,10 @@ def test_nginx_sigterm_handling(host, container):
 @pytest.mark.nginx_e2e
 @pytest.mark.parametrize('container', [{'env': {'NGINX_PORT': '5556'}, 'port': '5556'}], indirect=True)
 def test_nginx_can_host_different_ports(host, container):
+    start = time.time()
+    while host.run('docker exec -t {} sh -c "wget http://127.0.0.1:5556/"'.format(container)).rc is not 1 and time.time() - start < 13:
+        time.sleep(1)
+
     wget_custom_port = host.run('docker exec -t {} sh -c "wget http://127.0.0.1:5556/"'.format(container))
     assert wget_custom_port.rc is 1
     assert u'502 Bad Gateway' in wget_custom_port.stdout

@@ -18,6 +18,6 @@ docker run --net="host" --rm -t \
     -v "$(pwd)/test/e2e:/tests" \
     -v "$(pwd)/tmp/test-results:/results" \
     -v /var/run/docker.sock:/var/run/docker.sock:ro \
-    renatomefi/docker-testinfra:5 \
+    ghcr.io/wyrihaximusnet/testinfra:2025.03.31 \
     -m "$TEST_SUITE" --junitxml="/results/http-e2e-$DOCKER_NGINX_TAG.xml" \
     --verbose --tag="$1"
