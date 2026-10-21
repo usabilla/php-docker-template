@@ -32,7 +32,7 @@ jobs:
         name: Generate Alpine
         shell: bash
         run: |
-          echo "versions=[\"3.19\"]" >> $GITHUB_OUTPUT
+          echo "versions=[\"3.23\",\"3.24\"]" >> $GITHUB_OUTPUT
   supported-nginx-versions:
     name: Supported nginx versions
     runs-on: ubuntu-latest
