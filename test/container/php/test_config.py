@@ -32,8 +32,11 @@ def test_config_files_are_loaded(host):
     assert '/usr/local/etc/php/php.ini' in files
     assert '/usr/local/etc/php/conf.d/default.ini' in files
     assert '/usr/local/etc/php/conf.d/docker-php-ext-apcu.ini' in files
-    assert '/usr/local/etc/php/conf.d/docker-php-ext-opcache.ini' in files
     assert '/usr/local/etc/php/conf.d/docker-php-ext-sodium.ini' in files
+
+@pytest.mark.php
+def test_opcache_is_loaded(host):
+    assert 'Zend OPcache' in host.run('php -m').stdout
 
 @pytest.mark.php_no_dev
 def test_production_config_is_effective(host):

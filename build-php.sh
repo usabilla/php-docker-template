@@ -8,7 +8,12 @@ declare -r IMAGE=$1
 
 declare -r VERSION_PHP=$2
 
-declare -r VERSION_ALPINE=$3
+# "latest" builds on upstream's floating tag, e.g. php:8.4-cli-alpine
+if [[ "$3" == "latest" ]]; then
+   declare -r VERSION_ALPINE=""
+else
+   declare -r VERSION_ALPINE=$3
+fi
 
 # I could create a placeholder like php:x.y-image-alpinex.y in the Dockerfile itself,
 # but I think it wouldn't be a good experience if you try to build the image yourself

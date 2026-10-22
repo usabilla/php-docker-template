@@ -32,7 +32,7 @@ jobs:
         name: Generate Alpine
         shell: bash
         run: |
-          echo "versions=[\"3.23\",\"3.24\"]" >> $GITHUB_OUTPUT
+          echo "versions=[\"3.23\",\"3.24\",\"latest\"]" >> $GITHUB_OUTPUT
   supported-nginx-versions:
     name: Supported nginx versions
     runs-on: ubuntu-latest
@@ -42,8 +42,8 @@ jobs:
       - id: supported-nginx-versions
         name: Generate nginx
         shell: bash
-        run: | # The "1.29-nginx1-nginx" in here will be changed to "1.29 nginx1 nginx" when calling ./build-http.sh
-          echo "versions=[\"1.29-nginx1-nginx\"]" >> $GITHUB_OUTPUT
+        run: | # The "stable-nginx1-nginx" in here will be changed to "stable nginx1 nginx" when calling ./build-http.sh
+          echo "versions=[\"1.31\", \"1.30\", \"stable-nginx1-nginx\"]" >> $GITHUB_OUTPUT
   supported-php-versions:
     name: Supported PHP versions
     runs-on: ubuntu-latest
@@ -54,7 +54,7 @@ jobs:
         name: Generate PHP
         shell: bash
         run: |
-          echo "versions=[\"8.2\"]" >> $GITHUB_OUTPUT
+          echo "versions=[\"8.5\",\"8.4\",\"8.3\",\"8.2\"]" >> $GITHUB_OUTPUT
   php-type-matrix:
     name: PHP Type Matrix
     runs-on: ubuntu-latest

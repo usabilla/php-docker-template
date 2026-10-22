@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.3-fpm-alpine3.9 AS base
+FROM usabillabv/php:8.4-fpm-alpine3.24 AS base
 
 FROM composer:1 as composer
 

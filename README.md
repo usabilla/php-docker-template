@@ -5,7 +5,7 @@
 [![Continuous Integration](https://github.com/usabilla/php-docker-template/actions/workflows/ci.yml/badge.svg?event=push)](https://github.com/usabilla/php-docker-template/actions/workflows/ci.yml)
 [![Docker hub](https://img.shields.io/badge/Docker%20Hub-00a5c9.svg?logo=docker&style=flat&color=00a5c9&labelColor=00a5c9&logoColor=white)](https://hub.docker.com/r/usabillabv/php/)
 [![Docker hub](https://img.shields.io/docker/pulls/usabillabv/php.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
-[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/7.3-fpm-alpine3.11.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
+[![Docker hub](https://img.shields.io/microbadger/image-size/usabillabv/php/8.4-fpm-alpine3.24.svg?color=00a5c9&labelColor=03566a)](https://hub.docker.com/r/usabillabv/php/)
 [![Usabilla Feedback Button](.github/static/img/badge-usabilla-leave-us-feedback.png)](https://d6tizftlrpuof.cloudfront.net/live/i/4f03f8e795fb10233e000000/50db3123f698e9156665fa0fb1a914932de5a334.html?reset&project=php-docker-template&source=github)
 
 A series of Docker images to run PHP Applications on Usabilla Style
@@ -77,7 +77,7 @@ All images are based on their official variants, being:
 ## Alpine Linux situation
 
 Even though both of the images are based on the Alpine Linux, the PHP official repository gives us the option to choose
-between its versions, at this moment being `3.9` or `3.10`.
+between its versions, at this moment being `3.23` or `3.24`.
 
 Meanwhile on the official Nginx images we have no control over which Alpine version we use, this explains the tagging
 strategy coming in the next section.
@@ -93,11 +93,13 @@ In order to provide upgrade path we intend to keep one or more versions of PHP a
 The tag naming strategy consists of (Read as a regex):
 
 - PHP: `(phpMajor).(phpMinor)-(cli|fpm)-(alpine|future supported OSes)(alpineMajor).(alpineMinor)(-dev)?`
-  - Example: `7.3-fpm-alpine3.11`, `7.3-fpm-alpine3.11-dev`
+  - Example: `8.4-fpm-alpine3.24`, `8.4-fpm-alpine3.24-dev`
+  - Without an Alpine version, e.g. `8.4-fpm-alpine`, the tag follows the newest Alpine version
   - Note: The minor version might come followed by special versioning constraints in case of betas, etc. For instance
-   `7.3-rc-fpm-alpine3.11-dev`
+   `8.6-rc-fpm-alpine3.24-dev`
 - Nginx: `nginx(major).(minor)(-dev)?`
-  - Example: `nginx1.15`, `nginx1.15-dev`
+  - Example: `nginx1.30`, `nginx1.30-dev`
+  - `nginx` and `nginx1` follow the Nginx stable branch
 
 ## Adding more supported versions
 
@@ -112,44 +114,46 @@ your new changes you can see the `(BUILD).tags` file in the `tmp` directory.
 
 ### PHP
 
-In this example adding PHP 7.4-rc for cli and fpm:
+In this example adding PHP 8.6-rc for cli and fpm:
 
 ```diff
 build-cli: clean-tags
-	./build-php.sh cli 7.4 3.10
-	./build-php.sh cli 7.4 3.11
-+	./build-php.sh cli 7.4-rc 3.12
+	./build-php.sh cli 8.5 3.23
+	./build-php.sh cli 8.5 3.24
++	./build-php.sh cli 8.6-rc 3.24
 
 build-fpm: clean-tags
-	./build-php.sh fpm 7.4 3.10
-	./build-php.sh fpm 7.4 3.11
-+	./build-php.sh fpm 7.4-rc 3.12
+	./build-php.sh fpm 8.5 3.23
+	./build-php.sh fpm 8.5 3.24
++	./build-php.sh fpm 8.6-rc 3.24
 ```
 
 Being `./build-php.sh (cli/fpm) (PHP version) (Alpine version)`
 
 ### Nginx
 
-In this example adding Nginx 1.16:
+In this example adding Nginx 1.32:
 
 ```diff
 build-http: clean-tags
-    ./build-nginx.sh 1.15 nginx
-    ./build-nginx.sh 1.14
-+   ./build-nginx.sh 1.16
+    ./build-http.sh 1.31
+    ./build-http.sh 1.30
++   ./build-http.sh 1.32
+    ./build-http.sh stable nginx1 nginx
 ```
 
-Being `./build-nginx.sh (nginx version) (extra tag)`
+Being `./build-http.sh (nginx version) (extra tag)`
 
-Note you can add extra tags, this means if you want to make Nginx 1.16 our new default version you have to:
+Note you can add extra tags, this means if you want to make Nginx 1.32 our new default version you have to:
 
 ```diff
 build-http: clean-tags
--   ./build-nginx.sh 1.15 nginx
-+   ./build-nginx.sh 1.15
-    ./build-nginx.sh 1.14
--   ./build-nginx.sh 1.16
-+   ./build-nginx.sh 1.16 nginx
+    ./build-http.sh 1.31
+    ./build-http.sh 1.30
+-   ./build-http.sh 1.32
++   ./build-http.sh 1.32 nginx1 nginx
+-   ./build-http.sh stable nginx1 nginx
++   ./build-http.sh stable
 ```
 
 ### Important
@@ -183,7 +187,7 @@ Simply use the images as base of the application's `Dockerfile` and apply the ne
 ```Dockerfile
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.4-fpm-alpine3.12
+FROM usabillabv/php:8.4-fpm-alpine3.24
 ```
 
 In usual cases it might not be necessary to extend the nginx images, unless you desire to extend its behavior, for
@@ -333,7 +337,7 @@ An example Dockerfile with customized configuration might look like:
 ```Dockerfile
 # syntax=docker/dockerfile:1.0.0-experimental
 
-FROM usabillabv/php:7.3-fpm-alpine3.11
+FROM usabillabv/php:8.4-fpm-alpine3.24
 
 ENV PHP_FPM_PM="static"
 ENV PHP_FPM_PM_MAX_CHILDREN="70"
@@ -448,7 +452,7 @@ Since [Xdebug](https://xdebug.org) is a common extension to be used we offer two
 
 ##### Dev image
 
-Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:7.3-fpm-alpine3.11-dev`.
+Use the `dev` image by appending `-dev` to the end of the tag, like: `usabillabv/php:8.4-fpm-alpine3.24-dev`.
 
 Not recommended if you're layering with your production images, using a different base image doesn't allow to you share
 cache among your Dockerfile targets.
@@ -495,7 +499,7 @@ We recommend setting the XDEBUG_MODE when booting up a new container. Here's an 
 docker run -it \
   -e XDEBUG_MODE=coverage \
   -v "<HOST_PATH>:<CONTAINER_PATH>" \
-  usabillabv/php:7.4-cli-alpine3.12-dev \
+  usabillabv/php:8.4-cli-alpine3.24-dev \
   vendor/bin/infection --test-framework-options='--testsuite=unit' -s --threads=12 --min-msi=100 --min-covered-msi=100
 ```
 
@@ -540,7 +544,7 @@ spec:
         prometheus.io/scrape: "true"
     spec:
       containers:
-      - image: usabillabv/php:7.3-cli-alpine3.11
+      - image: usabillabv/php:8.4-cli-alpine3.24
         imagePullPolicy: IfNotPresent
         volumeMounts:
         - mountPath: /prometheus
@@ -593,7 +597,7 @@ empowers the `RUN` mounts and more, check its documentation
 # The base target will serve as initial layer for dev and prod images,
 # thus all necessary global configurations, extensions and modules
 # should be put here
-FROM usabillabv/php:7.3-fpm-alpine3.11 AS base
+FROM usabillabv/php:8.4-fpm-alpine3.24 AS base
 
 # When composer gets copied we want to make sure it's from the major version 1
 FROM composer:1 as composer
