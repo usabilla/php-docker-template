@@ -94,6 +94,7 @@ The tag naming strategy consists of (Read as a regex):
 
 - PHP: `(phpMajor).(phpMinor)-(cli|fpm)-(alpine|future supported OSes)(alpineMajor).(alpineMinor)(-dev)?`
   - Example: `8.4-fpm-alpine3.24`, `8.4-fpm-alpine3.24-dev`
+  - Without an Alpine version, e.g. `8.4-fpm-alpine`, the tag follows the newest Alpine version
   - Note: The minor version might come followed by special versioning constraints in case of betas, etc. For instance
    `8.6-rc-fpm-alpine3.24-dev`
 - Nginx: `nginx(major).(minor)(-dev)?`
