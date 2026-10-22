@@ -16,43 +16,33 @@ BUILDINGIMAGE=*
 # Docker PHP images build matrix ./build-php.sh (cli/fpm) (PHP version) (Alpine version)
 build-cli: BUILDINGIMAGE=cli
 build-cli: clean-tags
-	./build-php.sh cli 7.2 3.7
-	./build-php.sh cli 7.2 3.8
-	./build-php.sh cli 7.2 3.9
-	./build-php.sh cli 7.2 3.10
-	./build-php.sh cli 7.3 3.8
-	./build-php.sh cli 7.3 3.9
-	./build-php.sh cli 7.3 3.10
-	./build-php.sh cli 7.3 3.11
-	./build-php.sh cli 7.4 3.10
-	./build-php.sh cli 7.4 3.11
-	./build-php.sh cli 7.4 3.12
+	./build-php.sh cli 8.2 3.23
+	./build-php.sh cli 8.2 3.24
+	./build-php.sh cli 8.3 3.23
+	./build-php.sh cli 8.3 3.24
+	./build-php.sh cli 8.4 3.23
+	./build-php.sh cli 8.4 3.24
 
 build-fpm: BUILDINGIMAGE=fpm
 build-fpm: clean-tags
-	./build-php.sh fpm 7.2 3.7
-	./build-php.sh fpm 7.2 3.8
-	./build-php.sh fpm 7.2 3.9
-	./build-php.sh fpm 7.2 3.10
-	./build-php.sh fpm 7.3 3.8
-	./build-php.sh fpm 7.3 3.9
-	./build-php.sh fpm 7.3 3.10
-	./build-php.sh fpm 7.3 3.11
-	./build-php.sh fpm 7.4 3.10
-	./build-php.sh fpm 7.4 3.11
-	./build-php.sh fpm 7.4 3.12
+	./build-php.sh fpm 8.2 3.23
+	./build-php.sh fpm 8.2 3.24
+	./build-php.sh fpm 8.3 3.23
+	./build-php.sh fpm 8.3 3.24
+	./build-php.sh fpm 8.4 3.23
+	./build-php.sh fpm 8.4 3.24
 
-# Docker HTTP images build matrix ./build-nginx.sh (nginx version) (extra tag)
+# Docker HTTP images build matrix ./build-http.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
 build-http: clean-tags
-	./build-http.sh 1.19 nginx1 nginx
-	./build-http.sh 1.18
+	./build-http.sh 1.31
+	./build-http.sh 1.30 nginx1 nginx
 
 # Docker Prometheus Exporter file images build matrix ./build-prometheus-exporter-file.sh (nginx version) (extra tag)
 # Adding arbitrary version 1.0 in order to make sure if we break compatibility we have to up it
 build-prometheus-exporter-file: BUILDINGIMAGE=prometheus-exporter-file
 build-prometheus-exporter-file: clean-tags
-	./build-prometheus-exporter-file.sh 1.29 prometheus-exporter-file1.0 prometheus-exporter-file1
+	./build-prometheus-exporter-file.sh 1.30 prometheus-exporter-file1.0 prometheus-exporter-file1
 
 .NOTPARALLEL: clean-tags
 clean-tags:
