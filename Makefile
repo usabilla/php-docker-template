@@ -22,6 +22,8 @@ build-cli: clean-tags
 	./build-php.sh cli 8.3 3.24
 	./build-php.sh cli 8.4 3.23
 	./build-php.sh cli 8.4 3.24
+	./build-php.sh cli 8.5 3.23
+	./build-php.sh cli 8.5 3.24
 
 build-fpm: BUILDINGIMAGE=fpm
 build-fpm: clean-tags
@@ -31,6 +33,8 @@ build-fpm: clean-tags
 	./build-php.sh fpm 8.3 3.24
 	./build-php.sh fpm 8.4 3.23
 	./build-php.sh fpm 8.4 3.24
+	./build-php.sh fpm 8.5 3.23
+	./build-php.sh fpm 8.5 3.24
 
 # Docker HTTP images build matrix ./build-http.sh (nginx version) (extra tag)
 build-http: BUILDINGIMAGE=http
