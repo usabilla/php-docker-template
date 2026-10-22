@@ -99,6 +99,7 @@ The tag naming strategy consists of (Read as a regex):
    `8.6-rc-fpm-alpine3.24-dev`
 - Nginx: `nginx(major).(minor)(-dev)?`
   - Example: `nginx1.30`, `nginx1.30-dev`
+  - `nginx` and `nginx1` follow the Nginx stable branch
 
 ## Adding more supported versions
 
@@ -136,8 +137,9 @@ In this example adding Nginx 1.32:
 ```diff
 build-http: clean-tags
     ./build-http.sh 1.31
-    ./build-http.sh 1.30 nginx1 nginx
+    ./build-http.sh 1.30
 +   ./build-http.sh 1.32
+    ./build-http.sh stable nginx1 nginx
 ```
 
 Being `./build-http.sh (nginx version) (extra tag)`
@@ -147,10 +149,11 @@ Note you can add extra tags, this means if you want to make Nginx 1.32 our new d
 ```diff
 build-http: clean-tags
     ./build-http.sh 1.31
--   ./build-http.sh 1.30 nginx1 nginx
-+   ./build-http.sh 1.30
+    ./build-http.sh 1.30
 -   ./build-http.sh 1.32
 +   ./build-http.sh 1.32 nginx1 nginx
+-   ./build-http.sh stable nginx1 nginx
++   ./build-http.sh stable
 ```
 
 ### Important

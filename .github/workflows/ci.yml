@@ -42,8 +42,8 @@ jobs:
       - id: supported-nginx-versions
         name: Generate nginx
         shell: bash
-        run: | # The "1.30-nginx1-nginx" in here will be changed to "1.30 nginx1 nginx" when calling ./build-http.sh
-          echo "versions=[\"1.31\", \"1.30-nginx1-nginx\"]" >> $GITHUB_OUTPUT
+        run: | # The "stable-nginx1-nginx" in here will be changed to "stable nginx1 nginx" when calling ./build-http.sh
+          echo "versions=[\"1.31\", \"1.30\", \"stable-nginx1-nginx\"]" >> $GITHUB_OUTPUT
   supported-php-versions:
     name: Supported PHP versions
     runs-on: ubuntu-latest
